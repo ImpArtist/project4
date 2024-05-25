@@ -14,7 +14,7 @@ public interface IService {
 
     List<Map<String, Object>> queryAll(String table);
 
-    List<Map<String, Object>> getTableAttribute(String table);
+    List<Map<String, Object>> getTableAttribute(Map<String, Object> table);
 
     List<Map<String, Object>> getConnectSearchedList(String table1,String table2,String attribute1,String attribute2,String compareType);
 
@@ -22,5 +22,4 @@ public interface IService {
 
     List<Map<String, Object>> getTableName();
 
-    List<Map<String, Object>> getTableName1();
 }

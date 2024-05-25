@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import com.project.service.IService.IService;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.exceptions.PersistenceException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -45,9 +42,9 @@ public class SearchController {
     }
 
     //根据表名获取属性名
-    @GetMapping("/{table}/attribute")
-    public List<Map<String, Object>> getTableAttribute(@PathVariable("table") String table){
-        return Service.getTableAttribute(table);
+    @GetMapping("/table/attribute")
+    public List<Map<String, Object>> getTableAttribute(@RequestBody Map<String, Object> map){
+        return Service.getTableAttribute(map);
     }
 
     //获得所有表名

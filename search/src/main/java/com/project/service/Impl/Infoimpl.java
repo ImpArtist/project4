@@ -1,7 +1,6 @@
 package com.project.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.project.domain.pojo.StuInfo;
 import com.project.mapper.InfoMapper;
 import com.project.service.IService.IService;
 import org.springframework.stereotype.Service;
@@ -33,8 +32,11 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public List<Map<String, Object>> getTableAttribute(String table) {
-        return baseMapper.queryAllAttribute(table);
+    public List<Map<String, Object>> getTableAttribute(Map<String, Object> map) {
+        if(map.get("table") != null) {
+            return baseMapper.queryAllAttribute(map.get("table").toString());
+        }
+        return null;
     }
 
     @Override
