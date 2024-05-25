@@ -21,4 +21,6 @@ public interface IService {
     List<Map<String, Object>> getGroupSearchedList(String table,String aggregateAttri,String groupAttri,String aggregateType);
 
     List<Map<String, Object>> getTableName();
+
+    List<Map<String, Object>> getTableName1();
 }
