@@ -1,26 +1,29 @@
 package com.project.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.project.domain.pojo.AttributeTranslation;
 import com.project.domain.pojo.StuInfo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface InfoMapper extends BaseMapper<Object> {
 
-    @Select("SELECT * FROM ${table} WHERE ${attribute} = #{value}")
-    List<Map<String, Object>> queryListByAttributeConcrete(@Param("table") String table,@Param("attribute") String attribute, @Param("value") String value);
+    @Select("SELECT attribute,translation FROM ${table}_attribute order by privilege")
+    List<AttributeTranslation> selectAttributeTranslations(@Param("table") String table);
 
-    @Select("SELECT * FROM ${table} WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')")
-    List<Map<String, Object>> queryListByAttributeAbstract(@Param("table") String table,@Param("attribute") String attribute, @Param("value") String value);
+    List<LinkedHashMap<String, Object>> queryListByAttributeConcrete(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
 
-    @Select("SELECT * FROM ${table} WHERE ${attribute} >= #{start} AND ${attribute} <= #{end}")
-    List<Map<String, Object>> queryRangeListByAttribute(@Param("table") String table,@Param("attribute") String attribute, @Param("start") String start, @Param("end") String end);
+    List<LinkedHashMap<String, Object>> queryListByAttributeAbstract(@Param("table") String table,@Param("attribute") String attribute, @Param("value") String value,@Param("attributes") String attributes,@Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
+
+    @Select("SELECT ${attributes} FROM ${table} WHERE ${attribute} >= #{start} AND ${attribute} <= #{end}")
+    List<Map<String, Object>> queryRangeListByAttribute(@Param("table") String table,@Param("attribute") String attribute, @Param("start") String start, @Param("end") String end,@Param("attributes") String attributes);
 
     @Select("Select * FROM ${table}_attribute")
-    List<Map<String, Object>> queryAllAttribute(@Param("table") String table);
+    List<Map<String, Object>> queryAllAttribute(@Param("table") Object table);
 
     @Select("Select * FROM ${table}")
     List<Map<String, Object>>  queryAll(String table);
@@ -28,8 +31,8 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("Select * FROM table_info")
     List<Map<String, Object>> queryTableName();
 
-    @Select("Select * FROM ${table1},${table2} WHERE ${table1}.${attribute1} ${compareType} ${table2}.${attribute2}")
-    List<Map<String, Object>> queryConnectSearchedList(@Param("table1") String table1,@Param("table2") String table2,@Param("attribute1") String attribute1,@Param("attribute2") String attribute2,@Param("compareType") String compareType);
+    @Select("Select ${attributes} FROM ${table1},${table2} WHERE ${table1}.${attribute1} ${compareType} ${table2}.${attribute2}")
+    List<Map<String, Object>> queryConnectSearchedList(@Param("table1") String table1,@Param("table2") String table2,@Param("attribute1") String attribute1,@Param("attribute2") String attribute2,@Param("compareType") String compareType,@Param("attributes") String attributes);
 
     @Select("Select SUM(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
     List<Map<String, Object>> queryGroupSumList(String table, String aggregateAttri, String groupAttri);

@@ -1,29 +1,128 @@
 package com.project.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.domain.pojo.AttributeTranslation;
 import com.project.mapper.InfoMapper;
 import com.project.service.IService.IService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IService {
 
-    @Override
-    public List<Map<String, Object>> queryListConcrete(String table,String attribute, String value){
-        return baseMapper.queryListByAttributeConcrete(table,attribute, value);
+    public List<AttributeTranslation> selectAttributeTranslations(String table){
+        return baseMapper.selectAttributeTranslations(table);
+    }
+
+    public  String configerSQL(String table,String[] attributes){
+        List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
+        StringBuilder selectClause = new StringBuilder();
+        Map<String, String> attributeMap = new HashMap<>();
+        for (AttributeTranslation translation : attributeTranslations) {
+            attributeMap.put(translation.getAttribute(), translation.getTranslation());
+        }
+        if(attributes.length != 0) {
+            for (String attribute : attributes) {
+                selectClause.append(attribute).append(" AS ").append(attributeMap.get(attribute)).append(", ");
+                //System.out.println(attributeMap.get(attribute));
+            }
+        }
+        else{
+            for (AttributeTranslation translation : attributeTranslations){
+                selectClause.append(translation.getAttribute()).append(" AS ").append(translation.getTranslation()).append(", ");
+                //System.out.println(translation.getAttribute());
+            }
+        }
+
+        selectClause.setLength(selectClause.length() - 2);
+        return selectClause.toString();
+    }
+
+    public String ArraysToString(Object arr){
+        return arr.toString().replaceAll("\\[","").replaceAll("\\]","");
+    }
+    public String[]  JsonToArrays(String str){
+        JSONArray jsonArray = new JSONArray(str);
+        String[] stringArray = new String[jsonArray.length()];
+
+        // 遍历JSONArray并将每个元素转换为String
+        for (int i = 0; i < jsonArray.length(); i++) {
+            stringArray[i] = jsonArray.getString(i);
+        }
+        return stringArray;
     }
 
     @Override
-    public List<Map<String, Object>> queryListAbstract(String table,String attribute, String value){
-        return baseMapper.queryListByAttributeAbstract(table,attribute, value);
+    public List<LinkedHashMap<String, Object>> queryListConcrete(@RequestBody Map<String, Object> map){
+        String table = map.get("table").toString();
+        String attribute = map.get("attribute").toString();
+        String value = map.get("value").toString();
+        String order = map.get("order").toString();
+        String desc = map.get("desc").toString();
+        String startValue = map.get("start").toString();
+        int start;
+        String countValue = map.get("count").toString();
+        int count;
+        String[] attributes = JsonToArrays(map.get("attributes").toString());
+        String select = configerSQL(table, attributes);
+        try {
+            if (countValue != null && !countValue.isEmpty())
+                count = Integer.parseInt(countValue);
+            else
+                count = 100;
+            if (startValue != null && !startValue.isEmpty()) {
+                start = Integer.parseInt(startValue);
+            } else {
+                start = 0;
+            }
+            return baseMapper.queryListByAttributeConcrete(table, attribute, value, select, order, desc, start, count);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
     }
 
     @Override
-    public List<Map<String, Object>> queryRangeList(String table,String attribute, String start, String end){
-        return baseMapper.queryRangeListByAttribute(table,attribute, start, end);
+    public List<LinkedHashMap<String, Object>> queryListAbstract(Map<String, Object> map){
+        String table = map.get("table").toString();
+        String attribute = map.get("attribute").toString();
+        String value = map.get("value").toString();
+        String order = map.get("order").toString();
+        String desc = map.get("desc").toString();
+        String startValue = map.get("start").toString();
+        int start;
+        String countValue = map.get("count").toString();
+        int count;
+        String[] attributes = JsonToArrays(map.get("attributes").toString());
+        String select = configerSQL(table, attributes);
+        try {
+            if (countValue != null && !countValue.isEmpty())
+                count = Integer.parseInt(countValue);
+            else
+                count = 100;
+            if (startValue != null && !startValue.isEmpty()) {
+                start = Integer.parseInt(startValue);
+            } else {
+                start = 0;
+            }
+            return baseMapper.queryListByAttributeAbstract(table, attribute, value, select, order, desc, start, count);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Map<String, Object>> queryRangeList(Map<String, Object> map){
+
+        String attributes = ArraysToString(map.get("attributes"));
+        if(attributes.isEmpty())
+            return baseMapper.queryRangeListByAttribute(map.get("table").toString(),map.get("attribute").toString(),map.get("start").toString(),map.get("end").toString(), "*");
+        return baseMapper.queryRangeListByAttribute(map.get("table").toString(),map.get("attribute").toString(),map.get("start").toString(),map.get("end").toString(), attributes);
     }
 
     @Override
@@ -34,14 +133,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     @Override
     public List<Map<String, Object>> getTableAttribute(Map<String, Object> map) {
         if(map.get("table") != null) {
-            return baseMapper.queryAllAttribute(map.get("table").toString());
+            return baseMapper.queryAllAttribute(map.get("table"));
         }
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> getConnectSearchedList(String table1,String table2,String attribute1,String attribute2,String compareType){
-        return baseMapper.queryConnectSearchedList(table1,table2,attribute1,attribute2,compareType);
+    public List<Map<String, Object>> getConnectSearchedList(Map<String, Object> map){
+        String attributes = ArraysToString(map.get("attributes"));
+        if(attributes.isEmpty())
+            return baseMapper.queryConnectSearchedList(map.get("table1").toString(),map.get("table2").toString(),map.get("attribute1").toString(),map.get("attribute2").toString(),map.get("compareType").toString(), "*");
+        return baseMapper.queryConnectSearchedList(map.get("table1").toString(),map.get("table2").toString(),map.get("attribute1").toString(),map.get("attribute2").toString(),map.get("compareType").toString(),attributes);
     }
 
     public List<Map<String, Object>> getTableName(){

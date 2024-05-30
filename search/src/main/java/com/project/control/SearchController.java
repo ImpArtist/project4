@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,25 +25,25 @@ public class SearchController {
     }
 
     //根据属性及其属性值的全字搜索
-    @GetMapping("{table}/0/normal/{attribute}/{value}")
-    public List<Map<String, Object>> getListByAttributeConcrete(@PathVariable("table") String table,@PathVariable("attribute") String attribute, @PathVariable("value")String value){
-        return Service.queryListConcrete(table,attribute,value);
+    @PostMapping("normal/concrete")
+    public List<LinkedHashMap<String, Object>> queryListConcrete(@RequestBody Map<String, Object> map){
+        return Service.queryListConcrete(map);
     }
 
     //根据属性及其属性值的模糊搜索
-    @GetMapping("{table}/1/normal/{attribute}/{value}")
-    public List<Map<String, Object>> getListByAttributeAbstract(@PathVariable("table") String table,@PathVariable("attribute") String attribute, @PathVariable("value")String value){
-        return Service.queryListAbstract(table,attribute,value);
+    @PostMapping("normal/abstract")
+    public List<LinkedHashMap<String, Object>>queryListAbstract(@RequestBody Map<String, Object> map){
+        return Service.queryListAbstract(map);
     }
 
     //根据属性范围查找
-    @GetMapping("/{table}/range/{attribute}/{start}/{end}")
-    public List<Map<String, Object>> getListByRange(@PathVariable("table") String table,@PathVariable("attribute") String attribute, @PathVariable("start")String start, @PathVariable("end")String end){
-        return Service.queryRangeList(table,attribute,start,end);
+    @PostMapping("/range")
+    public List<Map<String, Object>> getListByRange(@RequestBody Map<String, Object> map){
+        return Service.queryRangeList(map);
     }
 
     //根据表名获取属性名
-    @GetMapping("/table/attribute")
+    @PostMapping("/table/attribute")
     public List<Map<String, Object>> getTableAttribute(@RequestBody Map<String, Object> map){
         return Service.getTableAttribute(map);
     }
@@ -54,9 +55,9 @@ public class SearchController {
     }
 
     //关联搜索
-    @GetMapping("/connect/{table1}/{table2}/{attribute1}/{attribute2}/{compareType}")
-    public List<Map<String, Object>> getConnectSearchedList(@PathVariable("table1") String table1,@PathVariable("table2") String table2,@PathVariable("attribute1") String attribute1,@PathVariable("attribute2") String attribute2,@PathVariable("compareType") String compareType){
-        return Service.getConnectSearchedList(table1, table2, attribute1, attribute2, compareType);
+    @PostMapping("/connect")
+    public List<Map<String, Object>> getConnectSearchedList(@RequestBody Map<String, Object> map){
+        return Service.getConnectSearchedList(map);
     }
 
     //分组搜索
