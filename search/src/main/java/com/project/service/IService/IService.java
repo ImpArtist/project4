@@ -13,7 +13,7 @@ public interface IService {
     List<LinkedHashMap<String, Object>> queryList(Map<String, Object> map);
 
 
-    List<Map<String, Object>> queryRangeList(Map<String, Object> map);
+    List<LinkedHashMap<String, Object>> queryRangeList(Map<String, Object> map);
 
     List<Map<String, Object>> queryAll(String table);
 

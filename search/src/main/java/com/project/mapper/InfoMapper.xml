@@ -2,61 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.project.mapper.InfoMapper">
-    <select id="queryListByAttributeConcrete" resultType="java.util.LinkedHashMap">
-        SELECT ${attributes} FROM ${table}
-        WHERE ${attribute} = #{value}
-        <if test="order != null and order != ''">
-            <choose>
-                <when test="desc == '倒序'">
-                    ORDER BY ${order} DESC
-                </when>
-                <otherwise>
-                    ORDER BY ${order}
-                </otherwise>
-            </choose>
-        </if>
-        <if test="start != null and start != ''">
-            <if test="count != null and count != ''">
-                LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
-            </if>
-            <if test="count == null or count == ''">
-                LIMIT #{start, jdbcType=INTEGER}, 10
-            </if>
-        </if>
-        <if test="start == null or start == ''">
-            <if test="count != null and count != ''">
-                LIMIT #{count, jdbcType=INTEGER}
-            </if>
-        </if>
-    </select>
-
-    <select id="queryListByAttributeAbstract" resultType="java.util.LinkedHashMap">
-        SELECT ${attributes} FROM ${table}
-        WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
-        <if test="order != null and order != ''">
-            <choose>
-                <when test="desc == '倒序'">
-                    ORDER BY ${order} DESC
-                </when>
-                <otherwise>
-                    ORDER BY ${order}
-                </otherwise>
-            </choose>
-        </if>
-        <if test="start != null and start != ''">
-            <if test="count != null and count != ''">
-                LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
-            </if>
-            <if test="count == null or count == ''">
-                LIMIT #{start, jdbcType=INTEGER}, 10
-            </if>
-        </if>
-        <if test="start == null or start == ''">
-            <if test="count != null and count != ''">
-                LIMIT #{count, jdbcType=INTEGER}
-            </if>
-        </if>
-    </select>
 
         <select id="queryListByAttribute" resultType="java.util.LinkedHashMap">
             SELECT ${attributes} FROM ${table}
@@ -82,14 +27,35 @@
                 <if test="count != null and count != ''">
                     LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
                 </if>
-                <if test="count == null or count == ''">
-                    LIMIT #{start, jdbcType=INTEGER}, 10
-                </if>
             </if>
             <if test="start == null or start == ''">
                 <if test="count != null and count != ''">
                     LIMIT #{count, jdbcType=INTEGER}
                 </if>
             </if>
+        </select>
+        <select id="queryRangeList" resultType="java.util.LinkedHashMap">
+            SELECT ${attributes} FROM ${table}
+            WHERE ${attribute} >= #{begin} AND ${attribute} &lt;= #{end}
+            <if test="order != null and order != ''">
+            <choose>
+                <when test="desc == '倒序'">
+                    ORDER BY ${order} DESC
+                </when>
+                <otherwise>
+                    ORDER BY ${order}
+                </otherwise>
+            </choose>
+            </if>
+        <if test="start != null and start != ''">
+            <if test="count != null and count != ''">
+                LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
+            </if>
+        </if>
+        <if test="start == null or start == ''">
+            <if test="count != null and count != ''">
+                LIMIT #{count, jdbcType=INTEGER}
+            </if>
+        </if>
         </select>
 </mapper>

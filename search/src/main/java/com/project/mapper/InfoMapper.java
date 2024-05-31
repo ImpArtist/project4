@@ -15,14 +15,9 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("SELECT attribute,translation FROM ${table}_attribute order by privilege")
     List<AttributeTranslation> selectAttributeTranslations(@Param("table") String table);
 
-    List<LinkedHashMap<String, Object>> queryListByAttributeConcrete(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
-
-    List<LinkedHashMap<String, Object>> queryListByAttributeAbstract(@Param("table") String table,@Param("attribute") String attribute, @Param("value") String value,@Param("attributes") String attributes,@Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
-
     List<LinkedHashMap<String, Object>> queryListByAttribute(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type);
 
-    @Select("SELECT ${attributes} FROM ${table} WHERE ${attribute} >= #{start} AND ${attribute} <= #{end}")
-    List<Map<String, Object>> queryRangeListByAttribute(@Param("table") String table,@Param("attribute") String attribute, @Param("start") String start, @Param("end") String end,@Param("attributes") String attributes);
+    List<LinkedHashMap<String, Object>> queryRangeList(@Param("table") String table,@Param("attribute") String attribute, @Param("begin") String begin, @Param("end") String end,@Param("attributes") String attributes,@Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
 
     @Select("Select * FROM ${table}_attribute")
     List<Map<String, Object>> queryAllAttribute(@Param("table") Object table);
