@@ -11,6 +11,8 @@ import java.util.Map;
 public interface IService {
     List<LinkedHashMap<String, Object>> queryListConcrete(Map<String, Object> map);
 
+    List<LinkedHashMap<String, Object>> queryList(Map<String, Object> map);
+
     List<LinkedHashMap<String, Object>> queryListAbstract(Map<String, Object> map);
 
     List<Map<String, Object>> queryRangeList(Map<String, Object> map);

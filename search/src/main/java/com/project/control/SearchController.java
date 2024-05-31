@@ -36,6 +36,12 @@ public class SearchController {
         return Service.queryListAbstract(map);
     }
 
+    //统一的常规搜索
+    @PostMapping("normal")
+    public List<LinkedHashMap<String, Object>>queryList(@RequestBody Map<String, Object> map){
+        return Service.queryList(map);
+    }
+
     //根据属性范围查找
     @PostMapping("/range")
     public List<Map<String, Object>> getListByRange(@RequestBody Map<String, Object> map){

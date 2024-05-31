@@ -57,4 +57,39 @@
             </if>
         </if>
     </select>
+
+        <select id="queryListByAttribute" resultType="java.util.LinkedHashMap">
+            SELECT ${attributes} FROM ${table}
+            <choose>
+                <when test="type == '全字'">
+                    WHERE ${attribute} = #{value}
+                </when>
+                <otherwise>
+                    WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
+                </otherwise>
+            </choose>
+            <if test="order != null and order != ''">
+                <choose>
+                    <when test="desc == '倒序'">
+                        ORDER BY ${order} DESC
+                    </when>
+                    <otherwise>
+                        ORDER BY ${order}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="start != null and start != ''">
+                <if test="count != null and count != ''">
+                    LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
+                </if>
+                <if test="count == null or count == ''">
+                    LIMIT #{start, jdbcType=INTEGER}, 10
+                </if>
+            </if>
+            <if test="start == null or start == ''">
+                <if test="count != null and count != ''">
+                    LIMIT #{count, jdbcType=INTEGER}
+                </if>
+            </if>
+        </select>
 </mapper>
