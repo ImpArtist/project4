@@ -24,17 +24,6 @@ public class SearchController {
         return Service.queryAll(table);
     }
 
-    //根据属性及其属性值的全字搜索
-    @PostMapping("normal/concrete")
-    public List<LinkedHashMap<String, Object>> queryListConcrete(@RequestBody Map<String, Object> map){
-        return Service.queryListConcrete(map);
-    }
-
-    //根据属性及其属性值的模糊搜索
-    @PostMapping("normal/abstract")
-    public List<LinkedHashMap<String, Object>>queryListAbstract(@RequestBody Map<String, Object> map){
-        return Service.queryListAbstract(map);
-    }
 
     //统一的常规搜索
     @PostMapping("normal")

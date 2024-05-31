@@ -57,64 +57,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         return stringArray;
     }
 
-    @Override
-    public List<LinkedHashMap<String, Object>> queryListConcrete(@RequestBody Map<String, Object> map){
-        String table = map.get("table").toString();
-        String attribute = map.get("attribute").toString();
-        String value = map.get("value").toString();
-        String order = map.get("order").toString();
-        String desc = map.get("desc").toString();
-        String startValue = map.get("start").toString();
-        int start;
-        String countValue = map.get("count").toString();
-        int count;
-        String[] attributes = JsonToArrays(map.get("attributes").toString());
-        String select = configerSQL(table, attributes);
-        try {
-            if (countValue != null && !countValue.isEmpty())
-                count = Integer.parseInt(countValue);
-            else
-                count = 100;
-            if (startValue != null && !startValue.isEmpty()) {
-                start = Integer.parseInt(startValue);
-            } else {
-                start = 0;
-            }
-            return baseMapper.queryListByAttributeConcrete(table, attribute, value, select, order, desc, start, count);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-
-    }
-
-    @Override
-    public List<LinkedHashMap<String, Object>> queryListAbstract(Map<String, Object> map){
-        String table = map.get("table").toString();
-        String attribute = map.get("attribute").toString();
-        String value = map.get("value").toString();
-        String order = map.get("order").toString();
-        String desc = map.get("desc").toString();
-        String startValue = map.get("start").toString();
-        int start;
-        String countValue = map.get("count").toString();
-        int count;
-        String[] attributes = JsonToArrays(map.get("attributes").toString());
-        String select = configerSQL(table, attributes);
-        try {
-            if (countValue != null && !countValue.isEmpty())
-                count = Integer.parseInt(countValue);
-            else
-                count = 100;
-            if (startValue != null && !startValue.isEmpty()) {
-                start = Integer.parseInt(startValue);
-            } else {
-                start = 0;
-            }
-            return baseMapper.queryListByAttributeAbstract(table, attribute, value, select, order, desc, start, count);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 
     @Override
     public List<LinkedHashMap<String, Object>> queryList(Map<String, Object> map){
