@@ -1,3 +1,0 @@
-<typeAliases>
-    <typeAlias type="java.util.LinkedHashMap" alias="LinkedHashMap"/>
-</typeAliases>
