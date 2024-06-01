@@ -31,6 +31,8 @@ public class SearchController {
         return Service.queryList(map);
     }
 
+
+
     //根据属性范围查找
     @PostMapping("/range")
     public List<LinkedHashMap<String, Object>> getListByRange(@RequestBody Map<String, Object> map){

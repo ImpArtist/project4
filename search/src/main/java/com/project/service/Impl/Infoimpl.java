@@ -62,13 +62,14 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     public List<LinkedHashMap<String, Object>> queryList(Map<String, Object> map){
         String table = map.get("table").toString();
         String attribute = map.get("attribute").toString();
-        String value = map.get("value").toString();
+        String value = Optional.ofNullable(map.get("value")).orElse("").toString();
         String order = map.get("order").toString();
-        String desc = map.get("desc").toString();
-        String startValue = map.get("start").toString();
+        String desc = Optional.ofNullable(map.get("desc")).orElse("").toString();
+        String startValue = Optional.ofNullable(map.get("startValue")).orElse("").toString();
         int start;
-        String countValue = map.get("count").toString();
+        String countValue = Optional.ofNullable(map.get("countValue")).orElse("").toString();
         int count;
+        String type = Optional.ofNullable(map.get("type")).orElse("").toString();
         String[] attributes = JsonToArrays(map.get("attributes").toString());
         String select = configerSQL(table, attributes);
         try {
@@ -81,7 +82,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             } else {
                 start = 0;
             }
-            return baseMapper.queryListByAttribute(table, attribute, value, select, order, desc, start, count,map.get("type").toString());
+            return baseMapper.queryListByAttribute(table, attribute, value, select, order, desc, start, count,type);
         } catch (NumberFormatException e) {
             return null;
         }
