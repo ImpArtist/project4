@@ -16,6 +16,7 @@ public interface IService {
 
     List<LinkedHashMap<String, Object>> queryRangeList(Map<String, Object> map);
 
+
     List<Map<String, Object>> queryAll(String table);
 
     List<Map<String, Object>> getTableAttribute(Map<String, Object> table);

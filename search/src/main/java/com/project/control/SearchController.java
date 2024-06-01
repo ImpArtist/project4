@@ -31,7 +31,7 @@ public class SearchController {
         return Service.queryList(map);
     }
 
-    @PostMapping("normal/mapping")
+    @PostMapping("mapping")
     public List<LinkedHashMap<String, String>>queryListMapping(@RequestBody Map<String, Object> map){
         return Service.queryListMapping(map);
     }
@@ -43,6 +43,7 @@ public class SearchController {
     public List<LinkedHashMap<String, Object>> getListByRange(@RequestBody Map<String, Object> map){
         return Service.queryRangeList(map);
     }
+
 
     //根据表名获取属性名
     @PostMapping("/table/attribute")
