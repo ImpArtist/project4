@@ -43,6 +43,33 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         return selectClause.toString();
     }
 
+    public  List<LinkedHashMap<String, String>> queryListMapping(String table,String[] attributes){
+        List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
+        List<LinkedHashMap<String, String>> res=new ArrayList<>();
+        Map<String, String> attributeMap = new HashMap<>();
+        for (AttributeTranslation translation : attributeTranslations) {
+            attributeMap.put(translation.getAttribute(), translation.getTranslation());
+        }
+        if(attributes.length != 0) {
+            for (String attribute : attributes) {
+                LinkedHashMap<String, String> tem = new LinkedHashMap<>();
+                tem.put("attribute", attribute);
+                tem.put("translation", attributeMap.get(attribute));
+                res.add(tem);
+            }
+        }
+        else{
+            for (AttributeTranslation translation : attributeTranslations){
+                LinkedHashMap<String, String> tem = new LinkedHashMap<>();
+                tem.put("attribute", translation.getAttribute());
+                tem.put("translation", translation.getTranslation());
+                res.add(tem);
+            }
+        }
+
+        return res;
+    }
+
     public String ArraysToString(Object arr){
         return arr.toString().replaceAll("\\[","").replaceAll("\\]","");
     }
@@ -70,7 +97,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String countValue = Optional.ofNullable(map.get("countValue")).orElse("").toString();
         int count;
         String type = Optional.ofNullable(map.get("type")).orElse("").toString();
-        String[] attributes = JsonToArrays(map.get("attributes").toString());
+        String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();
+        String[] attributes = JsonToArrays(attris);
         String select = configerSQL(table, attributes);
         try {
             if (countValue != null && !countValue.isEmpty())
@@ -84,6 +112,18 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             }
             return baseMapper.queryListByAttribute(table, attribute, value, select, order, desc, start, count,type);
         } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<LinkedHashMap<String, String>> queryListMapping(Map<String, Object> map) {
+        String table = map.get("table").toString();
+        String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();
+        String[] attributes = JsonToArrays(attris);
+        try {
+            return queryListMapping(table, attributes);
+        }catch (Exception e) {
             return null;
         }
     }

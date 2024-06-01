@@ -17,6 +17,7 @@ public interface InfoMapper extends BaseMapper<Object> {
 
     List<LinkedHashMap<String, Object>> queryListByAttribute(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type);
 
+
     List<LinkedHashMap<String, Object>> queryRangeList(@Param("table") String table,@Param("attribute") String attribute, @Param("begin") String begin, @Param("end") String end,@Param("attributes") String attributes,@Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count);
 
     @Select("Select * FROM ${table}_attribute")

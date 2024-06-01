@@ -31,6 +31,11 @@ public class SearchController {
         return Service.queryList(map);
     }
 
+    @PostMapping("normal/mapping")
+    public List<LinkedHashMap<String, String>>queryListMapping(@RequestBody Map<String, Object> map){
+        return Service.queryListMapping(map);
+    }
+
 
 
     //根据属性范围查找
