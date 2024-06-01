@@ -6,7 +6,7 @@
         <select id="queryListByAttribute" resultType="java.util.LinkedHashMap">
             SELECT ${attributes} FROM ${table}
             <choose>
-                <when test="type == '全字'">
+                <when test="type == 'true'">
                     WHERE ${attribute} = #{value}
                 </when>
                 <otherwise>
