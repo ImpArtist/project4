@@ -28,13 +28,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         }
         if(attributes.length != 0) {
             for (String attribute : attributes) {
-                selectClause.append(attribute).append(" AS ").append(attributeMap.get(attribute)).append(", ");
+                selectClause.append(attribute)
+//                        .append(" AS ").append(attributeMap.get(attribute))
+                        .append(", ");
                 //System.out.println(attributeMap.get(attribute));
             }
         }
         else{
             for (AttributeTranslation translation : attributeTranslations){
-                selectClause.append(translation.getAttribute()).append(" AS ").append(translation.getTranslation()).append(", ");
+                selectClause.append(translation.getAttribute())
+//                        .append(" AS ").append(translation.getTranslation())
+                        .append(", ");
                 //System.out.println(translation.getAttribute());
             }
         }
@@ -71,7 +75,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     public String ArraysToString(Object arr){
-        return arr.toString().replaceAll("\\[","").replaceAll("\\]","");
+        return arr.toString().replaceAll("\\[|]|\\s", "");
     }
     public String[]  JsonToArrays(String str){
         JSONArray jsonArray = new JSONArray(str);
