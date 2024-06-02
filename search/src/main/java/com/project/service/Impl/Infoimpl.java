@@ -105,10 +105,10 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String[] attributes = JsonToArrays(attris);
         String select = configerSQL(table, attributes);
         try {
-            if (countValue != null && !countValue.isEmpty())
+            if (countValue != null && !countValue.isEmpty()&&Integer.parseInt(countValue)!=0)
                 count = Integer.parseInt(countValue);
             else
-                count = 100;
+                count = 1000;
             if (startValue != null && !startValue.isEmpty()) {
                 start = Integer.parseInt(startValue);
             } else {
