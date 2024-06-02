@@ -96,9 +96,9 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String value = Optional.ofNullable(map.get("value")).orElse("").toString();
         String order = Optional.ofNullable(map.get("order")).orElse("").toString();
         String desc = Optional.ofNullable(map.get("desc")).orElse("").toString();
-        String startValue = Optional.ofNullable(map.get("startValue")).orElse("").toString();
+        String startValue = Optional.ofNullable(map.get("start")).orElse("").toString();
         int start;
-        String countValue = Optional.ofNullable(map.get("countValue")).orElse("").toString();
+        String countValue = Optional.ofNullable(map.get("count")).orElse("").toString();
         int count;
         String type = Optional.ofNullable(map.get("type")).orElse("").toString();
         String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();

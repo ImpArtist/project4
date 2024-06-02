@@ -18,7 +18,7 @@ public class DbManageController {
 
     private final DbManageService Service;
     @PostMapping("/create")
-    public boolean createTable(List<Map<String, Object>> map){
+    public boolean createTable(Map<String, Object> map){
         return Service.createTable(map);
     }
 }
