@@ -164,6 +164,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
 
+
     @Override
     public List<Map<String, Object>>  queryAll(String table){
         return baseMapper.queryAll(table);

@@ -39,7 +39,7 @@
             WHERE ${attribute} >= #{begin} AND ${attribute} &lt;= #{end}
             <if test="order != null and order != ''">
             <choose>
-                <when test="desc == '倒序'">
+                <when test="desc == 'descending'">
                     ORDER BY ${order} DESC
                 </when>
                 <otherwise>

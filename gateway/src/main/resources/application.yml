@@ -20,10 +20,10 @@ spring:
           uri: lb://searchservice
           predicates: # 路由断言，判断请求是否符合规则
             - Path=/search/** # 路径断言，判断路径是否是以/user开头，如果是则符合
-        - id: order-service
-          uri: lb://orderservice
+        - id: api-service
+          uri: lb://apiservice
           predicates:
-            - Path=/order/**
+            - Path=/api/**
       #      default-filters:
       #        - AddRequestHeader=Truth,Itcast is freaking awesome!
       globalcors: # 全局的跨域处理

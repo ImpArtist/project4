@@ -12,6 +12,7 @@
         <module>search</module>
         <module>gateway</module>
         <module>dbManage</module>
+        <module>api</module>
     </modules>
 
     <parent>
