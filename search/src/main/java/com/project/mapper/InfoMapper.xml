@@ -34,6 +34,8 @@
                 </if>
             </if>
         </select>
+
+
         <select id="queryRangeList" resultType="java.util.LinkedHashMap">
             SELECT ${attributes} FROM ${table}
             WHERE ${attribute} >= #{begin} AND ${attribute} &lt;= #{end}
@@ -58,4 +60,29 @@
             </if>
         </if>
         </select>
+
+    <select id="queryConnectList" resultType="java.util.LinkedHashMap">
+        SELECT ${attributes} FROM ${table1} join ${table2}
+        on ${table1}.${attribute1} ${compareType} ${table2}.${attribute2}
+        <if test="order != null and order != ''">
+            <choose>
+                <when test="desc == 'descending'">
+                    ORDER BY ${order} DESC
+                </when>
+                <otherwise>
+                    ORDER BY ${order}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="start != null and start != ''">
+            <if test="count != null and count != ''">
+                LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
+            </if>
+        </if>
+        <if test="start == null or start == ''">
+            <if test="count != null and count != ''">
+                LIMIT #{count, jdbcType=INTEGER}
+            </if>
+        </if>
+    </select>
 </mapper>

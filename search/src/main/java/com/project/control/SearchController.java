@@ -47,7 +47,7 @@ public class SearchController {
 
     //根据表名获取属性名
     @PostMapping("/table/attribute")
-    public List<Map<String, Object>> getTableAttribute(@RequestBody Map<String, Object> map){
+    public List<LinkedHashMap<String, Object>> getTableAttribute(@RequestBody Map<String, Object> map){
         return Service.getTableAttribute(map);
     }
 
@@ -59,8 +59,13 @@ public class SearchController {
 
     //关联搜索
     @PostMapping("/connect")
-    public List<Map<String, Object>> getConnectSearchedList(@RequestBody Map<String, Object> map){
-        return Service.getConnectSearchedList(map);
+    public List<LinkedHashMap<String, Object>> queryConnectList(@RequestBody Map<String, Object> map){
+        return Service.queryConnectList(map);
+    }
+
+    @PostMapping("/connect/mapping")
+    public List<LinkedHashMap<String, Object>> queryConnectListMapping(@RequestBody Map<String, Object> map){
+        return Service.queryConnectListMapping(map);
     }
 
     //分组搜索

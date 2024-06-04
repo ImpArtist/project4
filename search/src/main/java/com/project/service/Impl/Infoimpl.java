@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.domain.pojo.AttributeTranslation;
 import com.project.mapper.InfoMapper;
 import com.project.service.IService.IService;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IService {
@@ -172,7 +175,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public List<Map<String, Object>> getTableAttribute(Map<String, Object> map) {
+    public List<LinkedHashMap<String, Object>> getTableAttribute(Map<String, Object> map) {
         if(map.get("table") != null) {
             return baseMapper.queryAllAttribute(map.get("table"));
         }
@@ -180,12 +183,82 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public List<Map<String, Object>> getConnectSearchedList(Map<String, Object> map){
-        String attributes = ArraysToString(map.get("attributes"));
-        if(attributes.isEmpty())
-            return baseMapper.queryConnectSearchedList(map.get("table1").toString(),map.get("table2").toString(),map.get("attribute1").toString(),map.get("attribute2").toString(),map.get("compareType").toString(), "*");
-        return baseMapper.queryConnectSearchedList(map.get("table1").toString(),map.get("table2").toString(),map.get("attribute1").toString(),map.get("attribute2").toString(),map.get("compareType").toString(),attributes);
+    public List<LinkedHashMap<String, Object>> queryConnectListMapping(Map<String, Object> map) {
+        String table1 = Optional.ofNullable(map.get("table1")).orElse("").toString();
+        String table2 = Optional.ofNullable(map.get("table2")).orElse("").toString();
+        List<LinkedHashMap<String, Object>>  t1 = baseMapper.queryAllAttribute(table1);
+        List<LinkedHashMap<String, Object>> t2 = baseMapper.queryAllAttribute(table2);
+        for (LinkedHashMap<String, Object> item : t1) {
+            // 检查attribute字段是否存在并修改
+            if (item.containsKey("attribute")) {
+                item.put("attribute", table1 + "." + item.get("attribute"));
+            }
+
+            // 检查translation字段是否存在并修改
+            if (item.containsKey("translation")) {
+                item.put("translation", "表1." + item.get("translation"));
+            }
+        }
+        for (LinkedHashMap<String, Object> item : t2) {
+            // 检查attribute字段是否存在并修改
+            if (item.containsKey("attribute")) {
+                item.put("attribute", table2 + "." + item.get("attribute"));
+            }
+
+            // 检查translation字段是否存在并修改
+            if (item.containsKey("translation")) {
+                item.put("translation", "表2." + item.get("translation"));
+            }
+        }
+        return  Stream.concat(t1.stream(), t2.stream())
+                .collect(Collectors.toList());
     }
+
+
+    @Override
+    public List<LinkedHashMap<String, Object>> queryConnectList(Map<String, Object> map_){
+        String table1 = Optional.ofNullable(map_.get("table1")).orElse("").toString();
+        String table2 = Optional.ofNullable(map_.get("table2")).orElse("").toString();
+        String attribute1 = Optional.ofNullable(map_.get("attribute1")).orElse("").toString();
+        String attribute2 = Optional.ofNullable(map_.get("attribute2")).orElse("").toString();
+        String compareType = Optional.ofNullable(map_.get("compareType")).orElse("").toString();
+        String attris = Optional.ofNullable(map_.get("attributes")).orElse("").toString();
+        String attributes = ArraysToString(attris);
+        String order = Optional.ofNullable(map_.get("order")).orElse("").toString();
+        String desc = Optional.ofNullable(map_.get("desc")).orElse("").toString();
+        String startValue = Optional.ofNullable(map_.get("start")).orElse("").toString();
+        int start;
+        String countValue = Optional.ofNullable(map_.get("count")).orElse("").toString();
+        int count;
+        try {
+            if (countValue != null && !countValue.isEmpty())
+                count = Integer.parseInt(countValue);
+            else
+                count = 100;
+            if (startValue != null && !startValue.isEmpty()) {
+                start = Integer.parseInt(startValue);
+            } else {
+                start = 0;
+            }
+            if (attributes.isEmpty()) {
+                Map<String, Object> tmp = new HashMap<>();
+                tmp.put("table1", table1);
+                tmp.put("table2", table2);
+                attributes = queryConnectListMapping(tmp)
+                        .stream()
+                        .map(map -> map.get("attribute")) // 获取每个映射中的attribute值
+                        .filter(Objects::nonNull) // 过滤掉null值
+                        .map(Object::toString) // 将对象转换为字符串
+                        .collect(Collectors.joining(", "));
+            }
+            return baseMapper.queryConnectList(table1, table2, attribute1, attribute2, compareType, attributes, order, desc, start, count);
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+
 
     public List<Map<String, Object>> getTableName(){
         return baseMapper.queryTableName();

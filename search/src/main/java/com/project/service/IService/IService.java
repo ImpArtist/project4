@@ -16,12 +16,15 @@ public interface IService {
 
     List<LinkedHashMap<String, Object>> queryRangeList(Map<String, Object> map);
 
+    List<LinkedHashMap<String, Object>> queryConnectList(Map<String, Object> map);
+
+    List<LinkedHashMap<String, Object>> queryConnectListMapping(Map<String, Object> map);
+
 
     List<Map<String, Object>> queryAll(String table);
 
-    List<Map<String, Object>> getTableAttribute(Map<String, Object> table);
+    List<LinkedHashMap<String, Object>> getTableAttribute(Map<String, Object> table);
 
-    List<Map<String, Object>> getConnectSearchedList(Map<String, Object> map);
 
     List<Map<String, Object>> getGroupSearchedList(String table,String aggregateAttri,String groupAttri,String aggregateType);
 
