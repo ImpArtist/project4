@@ -137,15 +137,16 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
         String table = map.get("table").toString();
         String attribute = map.get("attribute").toString();
-        String begin = map.get("begin").toString();
-        String end = map.get("end").toString();
-        String order = map.get("order").toString();
-        String desc = map.get("desc").toString();
-        String startValue = map.get("start").toString();
+        String begin = Optional.ofNullable(map.get("begin")).orElse("").toString();
+        String end = Optional.ofNullable(map.get("end")).orElse("").toString();
+        String order = Optional.ofNullable(map.get("order")).orElse("").toString();
+        String desc = Optional.ofNullable(map.get("desc")).orElse("").toString();
+        String startValue = Optional.ofNullable(map.get("start")).orElse("").toString();
         int start;
-        String countValue = map.get("count").toString();
+        String countValue = Optional.ofNullable(map.get("count")).orElse("").toString();
         int count;
-        String[] attributes = JsonToArrays(map.get("attributes").toString());
+        String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();
+        String[] attributes = JsonToArrays(attris);
         String select = configerSQL(table, attributes);
         try {
             if (countValue != null && !countValue.isEmpty())
