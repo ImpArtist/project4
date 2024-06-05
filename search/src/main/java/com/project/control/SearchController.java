@@ -68,6 +68,11 @@ public class SearchController {
         return Service.queryConnectListMapping(map);
     }
 
+    @PostMapping("/connect/attribute/mapping")
+    public List<LinkedHashMap<String, Object>> queryConnectAttributeMapping(@RequestBody Map<String, Object> map){
+        return Service.queryConnectAttributeMapping(map);
+    }
+
     //分组搜索
     @GetMapping("/group/{table}/{aggregateAttri}/{groupAttri}/{aggregateType}")
     public List<Map<String, Object>> getGroupSearchedList(@PathVariable("table") String table,@PathVariable("aggregateAttri") String aggregateAttri,@PathVariable("groupAttri") String groupAttri,@PathVariable("aggregateType") String aggregateType) {

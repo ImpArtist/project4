@@ -189,23 +189,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         List<LinkedHashMap<String, Object>>  t1 = baseMapper.queryAllAttribute(table1);
         List<LinkedHashMap<String, Object>> t2 = baseMapper.queryAllAttribute(table2);
         for (LinkedHashMap<String, Object> item : t1) {
-            // 检查attribute字段是否存在并修改
             if (item.containsKey("attribute")) {
                 item.put("attribute", table1 + "." + item.get("attribute"));
             }
-
-            // 检查translation字段是否存在并修改
             if (item.containsKey("translation")) {
                 item.put("translation", "表1." + item.get("translation"));
             }
         }
         for (LinkedHashMap<String, Object> item : t2) {
-            // 检查attribute字段是否存在并修改
             if (item.containsKey("attribute")) {
                 item.put("attribute", table2 + "." + item.get("attribute"));
             }
-
-            // 检查translation字段是否存在并修改
             if (item.containsKey("translation")) {
                 item.put("translation", "表2." + item.get("translation"));
             }
@@ -262,6 +256,57 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
     public List<Map<String, Object>> getTableName(){
         return baseMapper.queryTableName();
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> queryConnectAttributeMapping(Map<String, Object> map_) {
+        String table1 = Optional.ofNullable(map_.get("table1")).orElse("").toString();
+        String table2 = Optional.ofNullable(map_.get("table2")).orElse("").toString();
+        String attris = Optional.ofNullable(map_.get("attributes")).orElse("").toString();
+        String attributes = ArraysToString(attris);
+        List<LinkedHashMap<String, Object>> res = new ArrayList<>();
+        try {
+            if (!attributes.isEmpty()) {
+                List<Map.Entry<String, String>> resultList = new ArrayList<>();
+                String[] parts = attributes.split(",");
+                for (String part : parts) {
+                    String[] keyValue = part.split("\\.", 2); // 使用正则表达式限制分割次数为2
+                    if (keyValue.length == 2) {
+                        resultList.add(new AbstractMap.SimpleEntry<>(keyValue[0], keyValue[1]));
+                    }
+                }
+                for (Map.Entry<String, String> entry : resultList) {
+                    LinkedHashMap<String, Object> tem = baseMapper.queryAttribute(entry.getKey(), entry.getValue()).get(0);
+                    if (table1.equals(entry.getKey())) {
+                        String translationValue = (String) tem.get("translation");
+                        tem.put("translation", "表1." + translationValue);
+                    } else if (table2.equals(entry.getKey())) {
+                        String translationValue = (String) tem.get("translation");
+                        tem.put("translation", "表2." + translationValue);
+                    }
+                    else{
+                        System.out.println("error");
+                    }
+                    res.add(tem);
+                }
+            }
+            else{
+                List<LinkedHashMap<String, Object>> t1 = baseMapper.queryAllAttribute(table1);
+                for (LinkedHashMap<String, Object> item : t1) {
+                    item.put("translation", "表1." + item.get("translation"));
+                }
+                List<LinkedHashMap<String, Object>> t2 = baseMapper.queryAllAttribute(table2);
+                for (LinkedHashMap<String, Object> item : t2) {
+                    item.put("translation", "表2." + item.get("translation"));
+                }
+                res.addAll(t1);
+                res.addAll(t2);
+            }
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return res;
+
     }
 
     @Override

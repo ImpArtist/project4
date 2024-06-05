@@ -24,6 +24,9 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("Select * FROM ${table}_attribute order by privilege")
     List<LinkedHashMap<String, Object>> queryAllAttribute(@Param("table") Object table);
 
+    @Select("Select attribute,translation FROM ${table}_attribute where attribute = #{attribute}")
+    List<LinkedHashMap<String, Object>> queryAttribute(@Param("table") Object table,@Param("attribute") String attribute);
+
     @Select("Select * FROM ${table}")
     List<Map<String, Object>>  queryAll(String table);
 
