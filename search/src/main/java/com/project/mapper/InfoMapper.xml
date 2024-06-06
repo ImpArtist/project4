@@ -85,4 +85,70 @@
             </if>
         </if>
     </select>
+
+    <select id="queryGroupList" resultType="java.util.LinkedHashMap">
+        SELECT
+        <if test="aggregate != null and aggregate != ''">
+            <if test="aggregateType != null and aggregateType != ''">
+                <choose>
+                    <when test="aggregateType == '求和'">
+                         SUM(${aggregate}) AS '求和值'
+                    </when>
+                    <when test="aggregateType == '求平均'">
+                         AVG(${aggregate}) AS '平均值'
+                    </when>
+                    <when test="aggregateType == '求最小'">
+                         MIN(${aggregate}) AS '最小值'
+                    </when>
+                    <when test="aggregateType == '求最大'">
+                         MAX(${aggregate}) AS '最大值'
+                    </when>
+                    <when test="aggregateType == '求标准差'">
+                         STD(${aggregate}) AS '标准差'
+                    </when>
+                    <when test="aggregateType == '求中位数'">
+                         MEDIAN(${aggregate}) AS '中位数'
+                    </when>
+                    <when test="aggregateType == '求众数'">
+                         MODE(${aggregate}) AS '众数'
+                    </when>
+                    <when test="aggregateType == '求方差'">
+                         VAR(${aggregate}) AS '方差'
+                    </when>
+                </choose>
+            </if>
+        </if>
+        FROM ${table}
+        <choose>
+            <when test="type == 'true'">
+                WHERE ${attribute} = #{value}
+            </when>
+            <otherwise>
+                WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
+            </otherwise>
+        </choose>
+        <if test="order != null and order != ''">
+            <choose>
+                <when test="desc == 'descending'">
+                    ORDER BY ${order} DESC
+                </when>
+                <otherwise>
+                    ORDER BY ${order}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="group != null or group != ''">
+            GROUP BY ${group}
+        </if>
+        <if test="start != null and start != ''">
+            <if test="count != null and count != ''">
+                LIMIT #{start, jdbcType=INTEGER}, #{count, jdbcType=INTEGER}
+            </if>
+        </if>
+        <if test="start == null or start == ''">
+            <if test="count != null and count != ''">
+                LIMIT #{count, jdbcType=INTEGER}
+            </if>
+        </if>
+    </select>
 </mapper>

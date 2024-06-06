@@ -26,7 +26,7 @@ public interface IService {
     List<LinkedHashMap<String, Object>> getTableAttribute(Map<String, Object> table);
 
 
-    List<Map<String, Object>> getGroupSearchedList(String table,String aggregateAttri,String groupAttri,String aggregateType);
+    List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map);
 
     List<Map<String, Object>> getTableName();
 

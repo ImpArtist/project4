@@ -60,4 +60,5 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("Select MODE(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
     List<Map<String, Object>> queryGroupModeList(String table, String aggregateAttri, String groupAttri);
 
+    List<LinkedHashMap<String, Object>> queryGroupList(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type, @Param("group") String group, @Param("aggregateType") String aggregateType,@Param("aggregate")  String aggregate);
 }

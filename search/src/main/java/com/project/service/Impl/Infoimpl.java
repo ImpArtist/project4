@@ -310,36 +310,38 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public List<Map<String, Object>> getGroupSearchedList(String table,String aggregateAttri,String groupAttri,String aggregateType){
-        switch (aggregateType) {
-            case "求和" -> {
-                return baseMapper.queryGroupSumList(table, aggregateAttri, groupAttri);
+    public List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map){
+        String table = map.get("table").toString();
+        String attribute = map.get("attribute").toString();
+        String value = Optional.ofNullable(map.get("value")).orElse("").toString();
+        String order = Optional.ofNullable(map.get("order")).orElse("").toString();
+        String group = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String aggregateType = Optional.ofNullable(map.get("aggregateType")).orElse("").toString();
+        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        String desc = Optional.ofNullable(map.get("desc")).orElse("").toString();
+        String startValue = Optional.ofNullable(map.get("start")).orElse("").toString();
+        int start;
+        String countValue = Optional.ofNullable(map.get("count")).orElse("").toString();
+        int count;
+        String type = Optional.ofNullable(map.get("type")).orElse("").toString();
+        String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();
+        String[] attributes = JsonToArrays(attris);
+        String select = configerSQL(table, attributes);
+        try {
+            if (countValue != null && !countValue.isEmpty()&&Integer.parseInt(countValue)!=0)
+                count = Integer.parseInt(countValue);
+            else
+                count = 1000;
+            if (startValue != null && !startValue.isEmpty()) {
+                start = Integer.parseInt(startValue);
+            } else {
+                start = 0;
             }
-            case "平均值" -> {
-                return baseMapper.queryGroupAvgList(table, aggregateAttri, groupAttri);
-            }
-            case "最小值" -> {
-                return baseMapper.queryGroupMinList(table, aggregateAttri, groupAttri);
-            }
-            case "最大值" -> {
-                return baseMapper.queryGroupMaxList(table, aggregateAttri, groupAttri);
-            }
-            case "计数" -> {
-                return baseMapper.queryGroupCountList(table, aggregateAttri, groupAttri);
-            }
-            case "标准差" -> {
-                return baseMapper.queryGroupStdList(table, aggregateAttri, groupAttri);
-            }
-            case "方差" -> {
-                return baseMapper.queryGroupSqrtList(table, aggregateAttri, groupAttri);
-            }
-            case "中位数" -> {
-                return baseMapper.queryGroupMedianList(table, aggregateAttri, groupAttri);
-            }
-            case "众数" -> {
-                return baseMapper.queryGroupModeList(table, aggregateAttri, groupAttri);
-            }
+            return baseMapper.queryGroupList(table, attribute, value, select, order, desc, start, count,type,group,aggregateType,aggregate);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
         }
-        return null;
+
     }
 }

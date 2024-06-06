@@ -74,8 +74,8 @@ public class SearchController {
     }
 
     //分组搜索
-    @GetMapping("/group/{table}/{aggregateAttri}/{groupAttri}/{aggregateType}")
-    public List<Map<String, Object>> getGroupSearchedList(@PathVariable("table") String table,@PathVariable("aggregateAttri") String aggregateAttri,@PathVariable("groupAttri") String groupAttri,@PathVariable("aggregateType") String aggregateType) {
-        return Service.getGroupSearchedList(table, aggregateAttri, groupAttri, aggregateType);
+    @PostMapping("/group")
+    public List<LinkedHashMap<String, Object>> queryGroupList(@RequestBody Map<String, Object> map) {
+        return Service.queryGroupList(map);
     }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- 其他配置 -->
+
+    <settings>
+        <!-- 设置 MyBatis 的日志实现为 SLF4J -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 其他设置 -->
+    </settings>
+
+    <!-- 其他配置 -->
+
+</configuration>
