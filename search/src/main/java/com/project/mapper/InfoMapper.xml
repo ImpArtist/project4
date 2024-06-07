@@ -105,6 +105,9 @@
                 </otherwise>
             </choose>
         </if>
+        <if test="group != null or group != ''">
+            GROUP BY ${group}
+        </if>
         <if test="order != null and order != ''">
             <choose>
                 <when test="desc == 'descending'">
@@ -114,9 +117,6 @@
                     ORDER BY ${order}
                 </otherwise>
             </choose>
-        </if>
-        <if test="group != null or group != ''">
-            GROUP BY ${group}
         </if>
         <if test="start != null and start != ''">
             <if test="count != null and count != ''">
