@@ -108,7 +108,7 @@
         <if test="group != null or group != ''">
             GROUP BY ${group}
         </if>
-        <if test="order != null and order != ''">
+        <if test="order != null and order != '' and order != 'MODE(${aggregate})' and order != 'VAR(${aggregate})' and order != 'MEDIAN(${aggregate})'">
             <choose>
                 <when test="desc == 'descending'">
                     ORDER BY ${order} DESC
