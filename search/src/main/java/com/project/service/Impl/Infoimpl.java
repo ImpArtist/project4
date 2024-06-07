@@ -390,12 +390,18 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         int count;
         String type = Optional.ofNullable(map.get("type")).orElse("").toString();
         String[] functions = ArraysToString(aggregateTypes).split(",");
-        for (int i = 0; i < functions.length; i++) {
-            functions[i] = functions[i] + "(" + aggregate + ")";
+        List<String> normalList = new ArrayList<>();
+        List<String> specialList = new ArrayList<>();
+        for (String function : functions) {
+            if (function.equals("MODE") || function.equals("MEDIAN") || function.equals("VAR"))
+                specialList.add(function);
+            else
+                normalList.add(function + "(" + aggregate + ")");
         }
         String modifiedAggregate = "";
         if(!Objects.equals(ArraysToString(aggregateTypes), ""))
-            modifiedAggregate = String.join(",", functions);
+            modifiedAggregate = String.join(",", normalList);
+        List<LinkedHashMap<String, Object>> res = new ArrayList<>();
         try {
             if (countValue != null && !countValue.isEmpty()&&Integer.parseInt(countValue)!=0)
                 count = Integer.parseInt(countValue);
@@ -406,7 +412,41 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             } else {
                 start = 0;
             }
-            return baseMapper.queryGroupList(table, attribute, value, order, desc, start, count,type,group,modifiedAggregate,aggregate);
+            res = baseMapper.queryGroupList(table, attribute, value, order, desc, start, count,type,group,modifiedAggregate,aggregate);
+            for(String function : specialList){
+                if(function.equals("MODE")){
+                    List<LinkedHashMap<String, Object>> MODERes = baseMapper.queryMODE(table,group,aggregate);
+                    for(LinkedHashMap<String, Object> item : res){
+                        for(LinkedHashMap<String, Object> item2 : MODERes){
+                            if (item.get(group).equals(item2.get(group))) {
+                                item.put("MODE(" + aggregate + ")", item2.get("mode_value"));
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(function.equals("MEDIAN")){
+                    List<LinkedHashMap<String, Object>> MEDIANRes = baseMapper.queryMEDIAN(table,group,aggregate);
+                    for(LinkedHashMap<String, Object> item : res){
+                        for(LinkedHashMap<String, Object> item2 : MEDIANRes){
+                            if (item.get(group).equals(item2.get(group))) {
+                                item.put("MEDIAN(" + aggregate + ")", item2.get("median_value"));
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(function.equals("VAR")){
+                    List<LinkedHashMap<String, Object>> VARRes = baseMapper.queryGroupList(table, attribute, value, order, desc, start, count,type,group,"STD(" + aggregate + ")",aggregate);
+                    int counter = 0;
+                    for(LinkedHashMap<String, Object> item : res){
+                        item.put("VAR(" + aggregate + ")", Math.pow((Double)VARRes.get(counter).get("STD(" + aggregate + ")"),2));
+                        counter++;
+                    }
+                }
+
+            }
+            return res;
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;

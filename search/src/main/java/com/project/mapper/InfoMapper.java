@@ -33,6 +33,9 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("Select * FROM table_info")
     List<Map<String, Object>> queryTableName();
 
+    List<LinkedHashMap<String, Object>> queryMODE(@Param("table") String table,@Param("group") String group,@Param("aggregate")  String aggregate);
 
     List<LinkedHashMap<String, Object>> queryGroupList(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value,  @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type, @Param("group") String group, @Param("aggregateType") String aggregateType,@Param("aggregate")  String aggregate);
+
+    List<LinkedHashMap<String, Object>> queryMEDIAN(@Param("table") String table,@Param("group") String group,@Param("aggregate")  String aggregate);
 }

@@ -129,4 +129,31 @@
             </if>
         </if>
     </select>
+
+    <select id="queryMODE" resultType="java.util.LinkedHashMap">
+        SELECT ${group},
+        mode_value
+        FROM (
+        SELECT ${group},
+        ${aggregate} AS mode_value,
+        ROW_NUMBER() OVER(PARTITION BY ${group} ORDER BY COUNT(*) DESC) AS rn
+        FROM ${table}
+        GROUP BY ${group}, ${aggregate}
+        ) t
+        WHERE rn = 1
+    </select>
+
+    <select id="queryMEDIAN" resultType="java.util.LinkedHashMap">
+        SELECT ${group},
+        median_value
+        FROM (
+        SELECT ${group},
+        ${aggregate} AS median_value,
+        ROW_NUMBER() OVER (PARTITION BY ${group} ORDER BY ${aggregate}) AS rnk,
+        COUNT(*) OVER (PARTITION BY ${group}) AS cnt
+        FROM ${table}
+        GROUP BY ${group}, ${aggregate}
+        ) t
+        WHERE rnk IN ((cnt + 1) / 2, (cnt + 2) / 2)
+    </select>
 </mapper>
