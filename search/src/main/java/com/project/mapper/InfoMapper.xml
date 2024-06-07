@@ -95,14 +95,16 @@
             </if>
         </if>
         FROM ${table}
-        <choose>
-            <when test="type == 'true'">
-                WHERE ${attribute} = #{value}
-            </when>
-            <otherwise>
-                WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
-            </otherwise>
-        </choose>
+        <if test="attribute != null and attribute != ''">
+            <choose>
+                <when test="type == 'true'">
+                    WHERE ${attribute} = #{value}
+                </when>
+                <otherwise>
+                    WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
+                </otherwise>
+            </choose>
+        </if>
         <if test="order != null and order != ''">
             <choose>
                 <when test="desc == 'descending'">

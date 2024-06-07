@@ -359,6 +359,11 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                         tmp.put("translation", aggregate + "方差");
                         tmp.put("attribute", "VAR(" +  aggregateValue + ")");
                         break;
+                    case "COUNT":
+                        tmp.put("translation", aggregate + "计数");
+                        tmp.put("attribute", "COUNT(" +  aggregateValue + ")");
+                        break;
+
                 }
                 res.add(tmp);
             }
@@ -372,7 +377,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     @Override
     public List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map){
         String table = map.get("table").toString();
-        String attribute = map.get("attribute").toString();
+        String attribute = Optional.ofNullable(map.get("attribute")).orElse("").toString();
         String value = Optional.ofNullable(map.get("value")).orElse("").toString();
         String order = Optional.ofNullable(map.get("order")).orElse("").toString();
         String group = Optional.ofNullable(map.get("group")).orElse("").toString();
