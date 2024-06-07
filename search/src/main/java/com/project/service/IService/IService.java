@@ -31,4 +31,6 @@ public interface IService {
     List<Map<String, Object>> getTableName();
 
     List<LinkedHashMap<String, Object>> queryConnectAttributeMapping(Map<String, Object> map);
+
+    List<LinkedHashMap<String, Object>> queryGroupListMapping(Map<String, Object> map);
 }

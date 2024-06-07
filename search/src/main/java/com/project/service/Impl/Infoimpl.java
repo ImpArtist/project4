@@ -310,13 +310,73 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
+    public List<LinkedHashMap<String, Object>> queryGroupListMapping(Map<String, Object> map) {
+        String aggregateTypes = ArraysToString(Optional.ofNullable(map.get("aggregateTypes")).orElse("").toString());
+        String groupValue = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        String aggregateValue = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        try {
+            String aggregate = baseMapper.queryAttribute(table, aggregateValue).get(0).get("translation").toString();
+            List<LinkedHashMap<String, Object>> res = new ArrayList<>();
+            String group = baseMapper.queryAttribute(table, groupValue).get(0).get("translation").toString();
+            LinkedHashMap<String, Object> first = new LinkedHashMap<>();
+            first.put("translation", group);
+            first.put("attribute", groupValue);
+            res.add(first);
+            String[] functions = aggregateTypes.split(",");
+            for (String func : functions) {
+                LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
+                switch (func) {
+                    case "AVG":
+                        tmp.put("translation", aggregate + "平均值");
+                        tmp.put("attribute", "AVG(" +  aggregateValue + ")");
+                        break;
+                    case "SUM":
+                        tmp.put("translation", aggregate + "求和值");
+                        tmp.put("attribute", "SUM(" +  aggregateValue + ")");
+                        break;
+                    case "MIN":
+                        tmp.put("translation", aggregate + "最小值");
+                        tmp.put("attribute", "MIN(" +  aggregateValue + ")");
+                        break;
+                    case "MAX":
+                        tmp.put("translation", aggregate + "最大值");
+                        tmp.put("attribute", "MAX(" +  aggregateValue + ")");
+                        break;
+                    case "STD":
+                        tmp.put("translation", aggregate + "标准差");
+                        tmp.put("attribute", "STD(" +  aggregateValue + ")");
+                        break;
+                    case "MEDIAN":
+                        tmp.put("translation", aggregate + "中位数");
+                        tmp.put("attribute", "MEDIAN(" +  aggregateValue + ")");
+                        break;
+                    case "MODE":
+                        tmp.put("translation", aggregate + "众数");
+                        tmp.put("attribute", "MODE(" +  aggregateValue + ")");
+                        break;
+                    case "VAR":
+                        tmp.put("translation", aggregate + "方差");
+                        tmp.put("attribute", "VAR(" +  aggregateValue + ")");
+                        break;
+                }
+                res.add(tmp);
+            }
+            return res;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map){
         String table = map.get("table").toString();
         String attribute = map.get("attribute").toString();
         String value = Optional.ofNullable(map.get("value")).orElse("").toString();
         String order = Optional.ofNullable(map.get("order")).orElse("").toString();
         String group = Optional.ofNullable(map.get("group")).orElse("").toString();
-        String aggregateType = Optional.ofNullable(map.get("aggregateType")).orElse("").toString();
+        String aggregateTypes = Optional.ofNullable(map.get("aggregateTypes")).orElse("").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String desc = Optional.ofNullable(map.get("desc")).orElse("").toString();
         String startValue = Optional.ofNullable(map.get("start")).orElse("").toString();
@@ -324,9 +384,13 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String countValue = Optional.ofNullable(map.get("count")).orElse("").toString();
         int count;
         String type = Optional.ofNullable(map.get("type")).orElse("").toString();
-        String attris = Optional.ofNullable(map.get("attributes")).orElse("").toString();
-        String[] attributes = JsonToArrays(attris);
-        String select = configerSQL(table, attributes);
+        String[] functions = ArraysToString(aggregateTypes).split(",");
+        for (int i = 0; i < functions.length; i++) {
+            functions[i] = functions[i] + "(" + aggregate + ")";
+        }
+        String modifiedAggregate = "";
+        if(!Objects.equals(ArraysToString(aggregateTypes), ""))
+            modifiedAggregate = String.join(",", functions);
         try {
             if (countValue != null && !countValue.isEmpty()&&Integer.parseInt(countValue)!=0)
                 count = Integer.parseInt(countValue);
@@ -337,7 +401,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             } else {
                 start = 0;
             }
-            return baseMapper.queryGroupList(table, attribute, value, select, order, desc, start, count,type,group,aggregateType,aggregate);
+            return baseMapper.queryGroupList(table, attribute, value, order, desc, start, count,type,group,modifiedAggregate,aggregate);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;

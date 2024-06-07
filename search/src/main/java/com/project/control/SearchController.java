@@ -78,4 +78,9 @@ public class SearchController {
     public List<LinkedHashMap<String, Object>> queryGroupList(@RequestBody Map<String, Object> map) {
         return Service.queryGroupList(map);
     }
+
+    @PostMapping("/group/mapping")
+    public List<LinkedHashMap<String, Object>> queryGroupListMapping(@RequestBody Map<String, Object> map) {
+        return Service.queryGroupListMapping(map);
+    }
 }

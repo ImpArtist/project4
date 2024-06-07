@@ -89,33 +89,9 @@
     <select id="queryGroupList" resultType="java.util.LinkedHashMap">
         SELECT
         <if test="aggregate != null and aggregate != ''">
+            ${group}
             <if test="aggregateType != null and aggregateType != ''">
-                <choose>
-                    <when test="aggregateType == '求和'">
-                         SUM(${aggregate}) AS '求和值'
-                    </when>
-                    <when test="aggregateType == '求平均'">
-                         AVG(${aggregate}) AS '平均值'
-                    </when>
-                    <when test="aggregateType == '求最小'">
-                         MIN(${aggregate}) AS '最小值'
-                    </when>
-                    <when test="aggregateType == '求最大'">
-                         MAX(${aggregate}) AS '最大值'
-                    </when>
-                    <when test="aggregateType == '求标准差'">
-                         STD(${aggregate}) AS '标准差'
-                    </when>
-                    <when test="aggregateType == '求中位数'">
-                         MEDIAN(${aggregate}) AS '中位数'
-                    </when>
-                    <when test="aggregateType == '求众数'">
-                         MODE(${aggregate}) AS '众数'
-                    </when>
-                    <when test="aggregateType == '求方差'">
-                         VAR(${aggregate}) AS '方差'
-                    </when>
-                </choose>
+                ,${aggregateType}
             </if>
         </if>
         FROM ${table}

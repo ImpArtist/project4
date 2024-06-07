@@ -33,32 +33,6 @@ public interface InfoMapper extends BaseMapper<Object> {
     @Select("Select * FROM table_info")
     List<Map<String, Object>> queryTableName();
 
-    @Select("Select SUM(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupSumList(String table, String aggregateAttri, String groupAttri);
 
-    @Select("Select AVG(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupAvgList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select MIN(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupMinList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select MAX(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupMaxList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select COUNT(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupCountList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select STD(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupStdList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select VAR(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupSqrtList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select MEDIAN(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupMedianList(String table, String aggregateAttri, String groupAttri);
-
-    @Select("Select MODE(${aggregateAttri}) AS ${aggregateAttri} FROM ${table} GROUP BY ${groupAttri}")
-    List<Map<String, Object>> queryGroupModeList(String table, String aggregateAttri, String groupAttri);
-
-    List<LinkedHashMap<String, Object>> queryGroupList(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value, @Param("attributes") String attributes, @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type, @Param("group") String group, @Param("aggregateType") String aggregateType,@Param("aggregate")  String aggregate);
+    List<LinkedHashMap<String, Object>> queryGroupList(@Param("table") String table, @Param("attribute") String attribute, @Param("value") String value,  @Param("order") String order, @Param("desc") String desc, @Param("start") Integer start, @Param("count") Integer count,@Param("type") String type, @Param("group") String group, @Param("aggregateType") String aggregateType,@Param("aggregate")  String aggregate);
 }
