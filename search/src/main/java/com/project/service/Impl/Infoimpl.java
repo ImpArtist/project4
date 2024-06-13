@@ -415,7 +415,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> analyseBarchart(Map<String, Object> map) {
+    public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
         Object dataObj = map.get("data");
         String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
@@ -423,15 +423,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
 
+        LinkedHashMap<String, Object> finalResult = null;
         try {
-            List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
+            });
 
             // 排序学生列表以按班级名称分组
-            students.sort(Comparator.comparing(student -> (String) student.get("stu_class_name")));
+            students.sort(Comparator.comparing(student -> (String) student.get(groupName)));
 
             // 按班级名称分组
             Map<String, List<Map<String, Object>>> groupedByClassName = students.stream()
-                    .collect(Collectors.groupingBy(student -> (String) student.get("stu_class_name")));
+                    .collect(Collectors.groupingBy(student -> (String) student.get(groupName)));
 
             // 获取按班级名称排序的班级列表
             List<String> sortedClassNames = new ArrayList<>(groupedByClassName.keySet());
@@ -458,8 +460,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                 // 提取并处理分数数据
                 List<Double> scores = group.stream()
-                        .filter(student -> student.get("stu_id") != null)
-                        .map(student -> ((Number) student.get("stu_id")).doubleValue())
+                        .filter(student -> student.get(aggregate) != null)
+                        .map(student -> ((Number) student.get(aggregate)).doubleValue())
                         .collect(Collectors.toList());
 
                 double sum = scores.stream().mapToDouble(Double::doubleValue).sum();
@@ -482,7 +484,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             }
 
             // 构建最终结果
-            result.add(createResultMap("班级", xValues, "bar"));
+            //result.add(createResultMap("班级", xValues, "bar"));
             result.add(createResultMap("数量", countValues, "bar"));
             result.add(createResultMap("总和", sumValues, "bar"));
             result.add(createResultMap("最小值", minValues, "bar"));
@@ -492,11 +494,12 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             result.add(createResultMap("中位数", medianValues, "line"));
             result.add(createResultMap("方差", varianceValues, "line"));
             result.add(createResultMap("众数", modeValues, "line"));
-
+            finalResult.put("series", result);
+            finalResult.put("xValues", xValues);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return result;
+        return finalResult;
     }
 
     @Override
