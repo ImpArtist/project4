@@ -81,6 +81,15 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                 .orElse(Double.NaN);
     }
 
+    private LinkedHashMap<String, Object> createResultMap(String name, List<?> data, String type) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        map.put("name", name);
+        map.put("data", data);
+        map.put("type", type);
+        map.put("smooth", "true".equals(type));
+        return map;
+    }
+
     public  List<LinkedHashMap<String, String>> queryListMapping(String table,String[] attributes){
         List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
         List<LinkedHashMap<String, String>> res=new ArrayList<>();
@@ -406,36 +415,39 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
+    public List<LinkedHashMap<String, Object>> analyseBarchart(Map<String, Object> map) {
         Object dataObj = map.get("data");
         String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         ObjectMapper objectMapper = new ObjectMapper();
-        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
-        List<String> xValues = new ArrayList<>();
-        List<Long> countValues = new ArrayList<>();
-        List<Double> sumValues = new ArrayList<>();
-        List<Double> minValues = new ArrayList<>();
-        List<Double> maxValues = new ArrayList<>();
-        List<Double> avgValues = new ArrayList<>();
-        List<Double> stdDevValues = new ArrayList<>();
-        List<Double> medianValues = new ArrayList<>();
-        List<Double> varianceValues = new ArrayList<>();
-        List<Double> modeValues = new ArrayList<>();
+
+        List<LinkedHashMap<String, Object>> result = new ArrayList<>();
 
         try {
             List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {});
 
             // 排序学生列表以按班级名称分组
-            students.sort(Comparator.comparing(student -> (String) student.get(groupName)));
+            students.sort(Comparator.comparing(student -> (String) student.get("stu_class_name")));
 
             // 按班级名称分组
             Map<String, List<Map<String, Object>>> groupedByClassName = students.stream()
-                    .collect(Collectors.groupingBy(student -> (String) student.get(groupName)));
+                    .collect(Collectors.groupingBy(student -> (String) student.get("stu_class_name")));
 
             // 获取按班级名称排序的班级列表
             List<String> sortedClassNames = new ArrayList<>(groupedByClassName.keySet());
             Collections.sort(sortedClassNames);
+
+            // 准备各个统计值的列表
+            List<String> xValues = new ArrayList<>();
+            List<Long> countValues = new ArrayList<>();
+            List<Double> sumValues = new ArrayList<>();
+            List<Double> minValues = new ArrayList<>();
+            List<Double> maxValues = new ArrayList<>();
+            List<Double> avgValues = new ArrayList<>();
+            List<Double> stdDevValues = new ArrayList<>();
+            List<Double> medianValues = new ArrayList<>();
+            List<Double> varianceValues = new ArrayList<>();
+            List<Double> modeValues = new ArrayList<>();
 
             // 遍历按排序后的班级名称
             for (String className : sortedClassNames) {
@@ -446,8 +458,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                 // 提取并处理分数数据
                 List<Double> scores = group.stream()
-                        .filter(student -> student.get(aggregate) != null)
-                        .map(student -> ((Number) student.get(aggregate)).doubleValue())
+                        .filter(student -> student.get("stu_id") != null)
+                        .map(student -> ((Number) student.get("stu_id")).doubleValue())
                         .collect(Collectors.toList());
 
                 double sum = scores.stream().mapToDouble(Double::doubleValue).sum();
@@ -469,17 +481,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                 modeValues.add(mode);
             }
 
-            // 将结果放入result中
-            result.put("X", xValues);
-            result.put("Count", countValues);
-            result.put("Sum", sumValues);
-            result.put("Min", minValues);
-            result.put("Max", maxValues);
-            result.put("Avg", avgValues);
-            result.put("StdDev", stdDevValues);
-            result.put("Median", medianValues);
-            result.put("Variance", varianceValues);
-            result.put("Mode", modeValues);
+            // 构建最终结果
+            result.add(createResultMap("班级", xValues, "bar"));
+            result.add(createResultMap("数量", countValues, "bar"));
+            result.add(createResultMap("总和", sumValues, "bar"));
+            result.add(createResultMap("最小值", minValues, "bar"));
+            result.add(createResultMap("最大值", maxValues, "bar"));
+            result.add(createResultMap("平均值", avgValues, "line"));
+            result.add(createResultMap("标准差", stdDevValues, "line"));
+            result.add(createResultMap("中位数", medianValues, "line"));
+            result.add(createResultMap("方差", varianceValues, "line"));
+            result.add(createResultMap("众数", modeValues, "line"));
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

@@ -34,5 +34,5 @@ public interface IService {
 
     List<LinkedHashMap<String, Object>> queryGroupListMapping(Map<String, Object> map);
 
-    LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map);
+    List<LinkedHashMap<String, Object>> analyseBarchart(Map<String, Object> map);
 }
