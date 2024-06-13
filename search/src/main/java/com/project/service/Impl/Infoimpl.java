@@ -423,7 +423,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
 
-        LinkedHashMap<String, Object> finalResult = null;
+        LinkedHashMap<String, Object> finalResult = new LinkedHashMap<>();
         try {
             List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
             });
@@ -489,11 +489,11 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             result.add(createResultMap("总和", sumValues, "bar"));
             result.add(createResultMap("最小值", minValues, "bar"));
             result.add(createResultMap("最大值", maxValues, "bar"));
-            result.add(createResultMap("平均值", avgValues, "line"));
-            result.add(createResultMap("标准差", stdDevValues, "line"));
-            result.add(createResultMap("中位数", medianValues, "line"));
-            result.add(createResultMap("方差", varianceValues, "line"));
-            result.add(createResultMap("众数", modeValues, "line"));
+            result.add(createResultMap("平均值", avgValues, "bar"));
+            result.add(createResultMap("标准差", stdDevValues, "bar"));
+            result.add(createResultMap("中位数", medianValues, "bar"));
+            result.add(createResultMap("方差", varianceValues, "bar"));
+            result.add(createResultMap("众数", modeValues, "bar"));
             finalResult.put("series", result);
             finalResult.put("xValues", xValues);
         } catch (Exception e) {
