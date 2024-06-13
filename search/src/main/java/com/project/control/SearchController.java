@@ -83,4 +83,9 @@ public class SearchController {
     public List<LinkedHashMap<String, Object>> queryGroupListMapping(@RequestBody Map<String, Object> map) {
         return Service.queryGroupListMapping(map);
     }
+
+    @PostMapping("/analysis/bar")
+    public LinkedHashMap<String, Object> analyseBarchart(@RequestBody Map<String, Object> map) {
+        return Service.analyseBarchart(map);
+    }
 }

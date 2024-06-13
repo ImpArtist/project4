@@ -1,6 +1,7 @@
 package com.project.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.domain.pojo.AttributeTranslation;
 import com.project.mapper.InfoMapper;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 @Service
@@ -48,6 +51,34 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
         selectClause.setLength(selectClause.length() - 2);
         return selectClause.toString();
+    }
+
+    private double calculateMedian(List<Double> scores) {
+        Collections.sort(scores);
+        int size = scores.size();
+        if (size % 2 == 0) {
+            return (scores.get(size / 2 - 1) + scores.get(size / 2)) / 2.0;
+        } else {
+            return scores.get(size / 2);
+        }
+    }
+
+    private double calculateVariance(List<Double> scores, double mean) {
+        double temp = 0;
+        for (double score : scores) {
+            temp += (score - mean) * (score - mean);
+        }
+        return temp / scores.size();
+    }
+
+    private double calculateMode(List<Double> scores) {
+        Map<Double, Long> frequencyMap = scores.stream()
+                .collect(Collectors.groupingBy(Double::doubleValue, Collectors.counting()));
+
+        return frequencyMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(Double.NaN);
     }
 
     public  List<LinkedHashMap<String, String>> queryListMapping(String table,String[] attributes){
@@ -372,6 +403,88 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             System.out.println(e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
+        Object dataObj = map.get("data");
+        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        List<String> xValues = new ArrayList<>();
+        List<Long> countValues = new ArrayList<>();
+        List<Double> sumValues = new ArrayList<>();
+        List<Double> minValues = new ArrayList<>();
+        List<Double> maxValues = new ArrayList<>();
+        List<Double> avgValues = new ArrayList<>();
+        List<Double> stdDevValues = new ArrayList<>();
+        List<Double> medianValues = new ArrayList<>();
+        List<Double> varianceValues = new ArrayList<>();
+        List<Double> modeValues = new ArrayList<>();
+
+        try {
+            List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {});
+
+            // 排序学生列表以按班级名称分组
+            students.sort(Comparator.comparing(student -> (String) student.get(groupName)));
+
+            // 按班级名称分组
+            Map<String, List<Map<String, Object>>> groupedByClassName = students.stream()
+                    .collect(Collectors.groupingBy(student -> (String) student.get(groupName)));
+
+            // 获取按班级名称排序的班级列表
+            List<String> sortedClassNames = new ArrayList<>(groupedByClassName.keySet());
+            Collections.sort(sortedClassNames);
+
+            // 遍历按排序后的班级名称
+            for (String className : sortedClassNames) {
+                List<Map<String, Object>> group = groupedByClassName.get(className);
+
+                xValues.add(className);
+                countValues.add((long) group.size());
+
+                // 提取并处理分数数据
+                List<Double> scores = group.stream()
+                        .filter(student -> student.get(aggregate) != null)
+                        .map(student -> ((Number) student.get(aggregate)).doubleValue())
+                        .collect(Collectors.toList());
+
+                double sum = scores.stream().mapToDouble(Double::doubleValue).sum();
+                double min = scores.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+                double max = scores.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                double avg = scores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                double median = calculateMedian(scores);
+                double variance = calculateVariance(scores, avg);
+                double stdDev = Math.sqrt(variance);
+                double mode = calculateMode(scores);
+
+                sumValues.add(sum);
+                minValues.add(min);
+                maxValues.add(max);
+                avgValues.add(avg);
+                medianValues.add(median);
+                varianceValues.add(variance);
+                stdDevValues.add(stdDev);
+                modeValues.add(mode);
+            }
+
+            // 将结果放入result中
+            result.put("X", xValues);
+            result.put("Count", countValues);
+            result.put("Sum", sumValues);
+            result.put("Min", minValues);
+            result.put("Max", maxValues);
+            result.put("Avg", avgValues);
+            result.put("StdDev", stdDevValues);
+            result.put("Median", medianValues);
+            result.put("Variance", varianceValues);
+            result.put("Mode", modeValues);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result;
     }
 
     @Override
