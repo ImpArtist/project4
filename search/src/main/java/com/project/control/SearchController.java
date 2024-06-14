@@ -88,4 +88,9 @@ public class SearchController {
     public LinkedHashMap<String, Object> analyseBarchart(@RequestBody Map<String, Object> map) {
         return Service.analyseBarchart(map);
     }
+
+    @PostMapping("/analysis/line")
+    public LinkedHashMap<String, Object> analyseLinechart(@RequestBody Map<String, Object> map) {
+        return Service.analyseLinechart(map);
+    }
 }

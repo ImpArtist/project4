@@ -3,6 +3,7 @@ package com.project.service.Impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.domain.dto.RawJavaScript;
 import com.project.domain.pojo.AttributeTranslation;
 import com.project.mapper.InfoMapper;
 import com.project.service.IService.IService;
@@ -87,6 +88,43 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         map.put("data", data);
         map.put("type", type);
         map.put("smooth", "true".equals(type));
+        return map;
+    }
+
+    private LinkedHashMap<String, Object> createSeriesMap(String name, List<?> data, String type, boolean smooth, Object label) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        map.put("name", name);
+        map.put("data", data);
+        map.put("type", type);
+        map.put("smooth", smooth);
+        if (label != null) {
+            map.put("label", label);
+        }
+        return map;
+    }
+
+    private LinkedHashMap<String, Object> createSeriesMapWithLabel(String name, List<?> data, String type, boolean smooth, List<String> labels) {
+        LinkedHashMap<String, Object> map = createSeriesMap(name, data, type, smooth,null);
+
+        // 创建 formatter 函数字符串
+        StringBuilder formatter = new StringBuilder("function(params) { const labels = [");
+        for (int i = 0; i < labels.size(); i++) {
+            String label = labels.get(i).replace("\"", "\\\"");
+            formatter.append('"');
+            formatter.append(label);
+            formatter.append('"');
+            if (i < labels.size() - 1) {
+                formatter.append(", ");
+            }
+        }
+        formatter.append("]; return labels[params.dataIndex]; }");
+
+        // 创建 labelMap 并添加到 series map 中
+        LinkedHashMap<String, Object> labelMap = new LinkedHashMap<>();
+        labelMap.put("show", true);
+        labelMap.put("position", "top");
+        labelMap.put("formatter", formatter.toString());
+        map.put("label", labelMap);
         return map;
     }
 
@@ -414,93 +452,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         }
     }
 
-    @Override
-    public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
-        Object dataObj = map.get("data");
-        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
-        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        List<LinkedHashMap<String, Object>> result = new ArrayList<>();
-
-        LinkedHashMap<String, Object> finalResult = new LinkedHashMap<>();
-        try {
-            List<Map<String, Object>> students = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
-            });
-
-            // 排序学生列表以按班级名称分组
-            students.sort(Comparator.comparing(student -> (String) student.get(groupName)));
-
-            // 按班级名称分组
-            Map<String, List<Map<String, Object>>> groupedByClassName = students.stream()
-                    .collect(Collectors.groupingBy(student -> (String) student.get(groupName)));
-
-            // 获取按班级名称排序的班级列表
-            List<String> sortedClassNames = new ArrayList<>(groupedByClassName.keySet());
-            Collections.sort(sortedClassNames);
-
-            // 准备各个统计值的列表
-            List<String> xValues = new ArrayList<>();
-            List<Long> countValues = new ArrayList<>();
-            List<Double> sumValues = new ArrayList<>();
-            List<Double> minValues = new ArrayList<>();
-            List<Double> maxValues = new ArrayList<>();
-            List<Double> avgValues = new ArrayList<>();
-            List<Double> stdDevValues = new ArrayList<>();
-            List<Double> medianValues = new ArrayList<>();
-            List<Double> varianceValues = new ArrayList<>();
-            List<Double> modeValues = new ArrayList<>();
-
-            // 遍历按排序后的班级名称
-            for (String className : sortedClassNames) {
-                List<Map<String, Object>> group = groupedByClassName.get(className);
-
-                xValues.add(className);
-                countValues.add((long) group.size());
-
-                // 提取并处理分数数据
-                List<Double> scores = group.stream()
-                        .filter(student -> student.get(aggregate) != null)
-                        .map(student -> ((Number) student.get(aggregate)).doubleValue())
-                        .collect(Collectors.toList());
-
-                double sum = scores.stream().mapToDouble(Double::doubleValue).sum();
-                double min = scores.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
-                double max = scores.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-                double avg = scores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                double median = calculateMedian(scores);
-                double variance = calculateVariance(scores, avg);
-                double stdDev = Math.sqrt(variance);
-                double mode = calculateMode(scores);
-
-                sumValues.add(sum);
-                minValues.add(min);
-                maxValues.add(max);
-                avgValues.add(avg);
-                medianValues.add(median);
-                varianceValues.add(variance);
-                stdDevValues.add(stdDev);
-                modeValues.add(mode);
-            }
-
-            // 构建最终结果
-            //result.add(createResultMap("班级", xValues, "bar"));
-            result.add(createResultMap("数量", countValues, "bar"));
-            result.add(createResultMap("总和", sumValues, "bar"));
-            result.add(createResultMap("最小值", minValues, "bar"));
-            result.add(createResultMap("最大值", maxValues, "bar"));
-            result.add(createResultMap("平均值", avgValues, "bar"));
-            result.add(createResultMap("标准差", stdDevValues, "bar"));
-            result.add(createResultMap("中位数", medianValues, "bar"));
-            result.add(createResultMap("方差", varianceValues, "bar"));
-            result.add(createResultMap("众数", modeValues, "bar"));
-            finalResult.put("series", result);
-            finalResult.put("xValues", xValues);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return finalResult;
-    }
  
     @Override
     public List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map){
@@ -581,5 +532,295 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             return null;
         }
 
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
+        Object dataObj = map.get("data");
+        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        String className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+        System.out.println(className);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<LinkedHashMap<String, Object>> result = new ArrayList<>();
+
+        LinkedHashMap<String, Object> finalResult = new LinkedHashMap<>();
+        try {
+            List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
+            });
+
+            data.sort(Comparator.comparing(record -> (String) record.get(groupName)));
+
+            Map<String, List<Map<String, Object>>> grouped = data.stream()
+                    .collect(Collectors.groupingBy(record -> (String) record.get(groupName)));
+
+            List<String> sortedKeys = new ArrayList<>(grouped.keySet());
+            Collections.sort(sortedKeys);
+
+            if(Objects.equals(className, "Long"))
+            // 准备各个统计值的列表
+            {
+                List<String> xValues = new ArrayList<>();
+                List<Long> countValues = new ArrayList<>();
+                List<Double> sumValues = new ArrayList<>();
+                List<Double> minValues = new ArrayList<>();
+                List<Double> maxValues = new ArrayList<>();
+                List<Double> avgValues = new ArrayList<>();
+                List<Double> stdDevValues = new ArrayList<>();
+                List<Double> medianValues = new ArrayList<>();
+                List<Double> varianceValues = new ArrayList<>();
+                List<Double> modeValues = new ArrayList<>();
+
+                for (String element : sortedKeys) {
+                    List<Map<String, Object>> group = grouped.get(element);
+
+                    xValues.add(element);
+                    countValues.add((long) group.size());
+
+                    // 提取并处理分数数据
+                    List<Double> aggregation = group.stream()
+                            .filter(record -> record.get(aggregate) != null)
+                            .map(record -> ((Number) record.get(aggregate)).doubleValue())
+                            .collect(Collectors.toList());
+
+                    double sum = aggregation.stream().mapToDouble(Double::doubleValue).sum();
+                    double min = aggregation.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+                    double max = aggregation.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    double avg = aggregation.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                    double median = calculateMedian(aggregation);
+                    double variance = calculateVariance(aggregation, avg);
+                    double stdDev = Math.sqrt(variance);
+                    double mode = calculateMode(aggregation);
+
+                    sumValues.add(sum);
+                    minValues.add(min);
+                    maxValues.add(max);
+                    avgValues.add(avg);
+                    medianValues.add(median);
+                    varianceValues.add(variance);
+                    stdDevValues.add(stdDev);
+                    modeValues.add(mode);
+                }
+
+                // 构建最终结果
+                result.add(createResultMap("数量", countValues, "bar"));
+                result.add(createResultMap("总和", sumValues, "bar"));
+                result.add(createResultMap("最小值", minValues, "bar"));
+                result.add(createResultMap("最大值", maxValues, "bar"));
+                result.add(createResultMap("平均值", avgValues, "bar"));
+                result.add(createResultMap("标准差", stdDevValues, "bar"));
+                result.add(createResultMap("中位数", medianValues, "bar"));
+                result.add(createResultMap("方差", varianceValues, "bar"));
+                result.add(createResultMap("众数", modeValues, "bar"));
+                finalResult.put("series", result);
+                finalResult.put("xValues", xValues);
+            }
+            if (Objects.equals(className, "String")) {
+                // 准备各个统计值的列表
+                List<String> xValues = new ArrayList<>();
+                List<Long> countValues = new ArrayList<>();
+                List<String> mostFrequentStrings = new ArrayList<>();
+                List<Long> mostFrequentCounts = new ArrayList<>();
+                List<String> leastFrequentStrings = new ArrayList<>();
+                List<Long> leastFrequentCounts = new ArrayList<>();
+
+                // 遍历每个分组进行统计计算
+                for (String key : sortedKeys) {
+                    List<Map<String, Object>> group = grouped.get(key);
+
+                    xValues.add(key);
+                    countValues.add((long) group.size());
+
+                    // 提取需要聚合的字符串
+                    List<String> aggregation = group.stream()
+                            .filter(record -> record.get(aggregate) != null)
+                            .map(record -> record.get(aggregate).toString())
+                            .collect(Collectors.toList());
+
+                    // 计算频率
+                    Map<String, Long> frequencyMap = aggregation.stream()
+                            .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+
+                    // 找到出现最多的字符串及其相关信息
+                    Map.Entry<String, Long> mostFrequentEntry = frequencyMap.entrySet().stream()
+                            .max(Map.Entry.comparingByValue())
+                            .orElseThrow(NoSuchElementException::new);
+                    String mostFrequentString = mostFrequentEntry.getKey();
+                    long mostFrequentCount = mostFrequentEntry.getValue();
+
+                    // 找到出现最少的字符串及其相关信息
+                    Map.Entry<String, Long> leastFrequentEntry = frequencyMap.entrySet().stream()
+                            .min(Map.Entry.comparingByValue())
+                            .orElseThrow(NoSuchElementException::new);
+                    String leastFrequentString = leastFrequentEntry.getKey();
+                    long leastFrequentCount = leastFrequentEntry.getValue();
+
+                    mostFrequentStrings.add(mostFrequentString);
+                    mostFrequentCounts.add(mostFrequentCount);
+                    leastFrequentStrings.add(leastFrequentString);
+                    leastFrequentCounts.add(leastFrequentCount);
+                }
+
+                // 构建最终结果的series部分
+                List<LinkedHashMap<String, Object>> seriesResult = new ArrayList<>();
+                seriesResult.add(createSeriesMap("数量", countValues, "bar", false, null));
+                seriesResult.add(createSeriesMapWithLabel("最多出现次数", mostFrequentCounts, "bar", false, mostFrequentStrings));
+                seriesResult.add(createSeriesMapWithLabel("最少出现次数", leastFrequentCounts, "bar", false, leastFrequentStrings));
+
+                // 将series和xValues添加到最终结果中
+                finalResult.put("series", seriesResult);
+                finalResult.put("xValues", xValues);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return finalResult;
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> analyseLinechart(Map<String, Object> map) {
+        Object dataObj = map.get("data");
+        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        String className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+        System.out.println(className);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<LinkedHashMap<String, Object>> result = new ArrayList<>();
+
+        LinkedHashMap<String, Object> finalResult = new LinkedHashMap<>();
+        try {
+            List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
+            });
+
+            data.sort(Comparator.comparing(record -> (String) record.get(groupName)));
+
+            Map<String, List<Map<String, Object>>> grouped = data.stream()
+                    .collect(Collectors.groupingBy(record -> (String) record.get(groupName)));
+
+            List<String> sortedKeys = new ArrayList<>(grouped.keySet());
+            Collections.sort(sortedKeys);
+
+            if(Objects.equals(className, "Long"))
+            // 准备各个统计值的列表
+            {
+                List<String> xValues = new ArrayList<>();
+                List<Long> countValues = new ArrayList<>();
+                List<Double> sumValues = new ArrayList<>();
+                List<Double> minValues = new ArrayList<>();
+                List<Double> maxValues = new ArrayList<>();
+                List<Double> avgValues = new ArrayList<>();
+                List<Double> stdDevValues = new ArrayList<>();
+                List<Double> medianValues = new ArrayList<>();
+                List<Double> varianceValues = new ArrayList<>();
+                List<Double> modeValues = new ArrayList<>();
+
+                for (String element : sortedKeys) {
+                    List<Map<String, Object>> group = grouped.get(element);
+
+                    xValues.add(element);
+                    countValues.add((long) group.size());
+
+                    // 提取并处理分数数据
+                    List<Double> aggregation = group.stream()
+                            .filter(record -> record.get(aggregate) != null)
+                            .map(record -> ((Number) record.get(aggregate)).doubleValue())
+                            .collect(Collectors.toList());
+
+                    double sum = aggregation.stream().mapToDouble(Double::doubleValue).sum();
+                    double min = aggregation.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+                    double max = aggregation.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    double avg = aggregation.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                    double median = calculateMedian(aggregation);
+                    double variance = calculateVariance(aggregation, avg);
+                    double stdDev = Math.sqrt(variance);
+                    double mode = calculateMode(aggregation);
+
+                    sumValues.add(sum);
+                    minValues.add(min);
+                    maxValues.add(max);
+                    avgValues.add(avg);
+                    medianValues.add(median);
+                    varianceValues.add(variance);
+                    stdDevValues.add(stdDev);
+                    modeValues.add(mode);
+                }
+
+                // 构建最终结果
+                result.add(createResultMap("数量", countValues, "line"));
+                result.add(createResultMap("总和", sumValues, "line"));
+                result.add(createResultMap("最小值", minValues, "line"));
+                result.add(createResultMap("最大值", maxValues, "line"));
+                result.add(createResultMap("平均值", avgValues, "line"));
+                result.add(createResultMap("标准差", stdDevValues, "line"));
+                result.add(createResultMap("中位数", medianValues, "line"));
+                result.add(createResultMap("方差", varianceValues, "line"));
+                result.add(createResultMap("众数", modeValues, "line"));
+                finalResult.put("series", result);
+                finalResult.put("xValues", xValues);
+            }
+            if (Objects.equals(className, "String")) {
+                // 准备各个统计值的列表
+                List<String> xValues = new ArrayList<>();
+                List<Long> countValues = new ArrayList<>();
+                List<String> mostFrequentStrings = new ArrayList<>();
+                List<Long> mostFrequentCounts = new ArrayList<>();
+                List<String> leastFrequentStrings = new ArrayList<>();
+                List<Long> leastFrequentCounts = new ArrayList<>();
+
+                // 遍历每个分组进行统计计算
+                for (String key : sortedKeys) {
+                    List<Map<String, Object>> group = grouped.get(key);
+
+                    xValues.add(key);
+                    countValues.add((long) group.size());
+
+                    // 提取需要聚合的字符串
+                    List<String> aggregation = group.stream()
+                            .filter(record -> record.get(aggregate) != null)
+                            .map(record -> record.get(aggregate).toString())
+                            .collect(Collectors.toList());
+
+                    // 计算频率
+                    Map<String, Long> frequencyMap = aggregation.stream()
+                            .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+
+                    // 找到出现最多的字符串及其相关信息
+                    Map.Entry<String, Long> mostFrequentEntry = frequencyMap.entrySet().stream()
+                            .max(Map.Entry.comparingByValue())
+                            .orElseThrow(NoSuchElementException::new);
+                    String mostFrequentString = mostFrequentEntry.getKey();
+                    long mostFrequentCount = mostFrequentEntry.getValue();
+
+                    // 找到出现最少的字符串及其相关信息
+                    Map.Entry<String, Long> leastFrequentEntry = frequencyMap.entrySet().stream()
+                            .min(Map.Entry.comparingByValue())
+                            .orElseThrow(NoSuchElementException::new);
+                    String leastFrequentString = leastFrequentEntry.getKey();
+                    long leastFrequentCount = leastFrequentEntry.getValue();
+
+                    mostFrequentStrings.add(mostFrequentString);
+                    mostFrequentCounts.add(mostFrequentCount);
+                    leastFrequentStrings.add(leastFrequentString);
+                    leastFrequentCounts.add(leastFrequentCount);
+                }
+
+                // 构建最终结果的series部分
+                List<LinkedHashMap<String, Object>> seriesResult = new ArrayList<>();
+                seriesResult.add(createSeriesMap("数量", countValues, "line", false, null));
+                seriesResult.add(createSeriesMap("最多出现次数", mostFrequentCounts, "line", false, mostFrequentStrings));
+                seriesResult.add(createSeriesMap("最少出现次数", leastFrequentCounts, "line", false, leastFrequentStrings));
+
+                // 将series和xValues添加到最终结果中
+                finalResult.put("series", seriesResult);
+                finalResult.put("xValues", xValues);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return finalResult;
     }
 }
