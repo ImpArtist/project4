@@ -501,7 +501,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         }
         return finalResult;
     }
-
+ 
     @Override
     public List<LinkedHashMap<String, Object>> queryGroupList(Map<String, Object> map){
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
