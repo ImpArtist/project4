@@ -676,6 +676,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        System.out.println(finalResult);
         return finalResult;
     }
 
