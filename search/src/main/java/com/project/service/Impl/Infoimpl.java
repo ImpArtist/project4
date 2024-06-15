@@ -534,11 +534,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String groupName = map.get("group").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        String SubAggregate;
+        String className;
         if (aggregate.contains(".")) {
             // 提取"."前面的内容作为table的值
             table = aggregate.substring(0, aggregate.indexOf("."));
+            SubAggregate = aggregate.substring(aggregate.indexOf(".") + 1);
+            className = baseMapper.queryAttribute(table,SubAggregate).get(0).get("class_name").toString();
         }
-        String className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+        else
+            className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+        System.out.println(className);
         ObjectMapper objectMapper = new ObjectMapper();
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
