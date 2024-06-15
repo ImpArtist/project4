@@ -3,20 +3,14 @@ package com.project.service.Impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.domain.dto.RawJavaScript;
 import com.project.domain.pojo.AttributeTranslation;
 import com.project.mapper.InfoMapper;
 import com.project.service.IService.IService;
-import org.apache.ibatis.jdbc.Null;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 @Service
@@ -537,11 +531,14 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     @Override
     public LinkedHashMap<String, Object> analyseBarchart(Map<String, Object> map) {
         Object dataObj = map.get("data");
-        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String groupName = map.get("group").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        if (aggregate.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            table = aggregate.substring(0, aggregate.indexOf("."));
+        }
         String className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
-        System.out.println(className);
         ObjectMapper objectMapper = new ObjectMapper();
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
@@ -551,13 +548,12 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
             });
 
-            data.sort(Comparator.comparing(record -> (String) record.get(groupName)));
 
             Map<String, List<Map<String, Object>>> grouped = data.stream()
-                    .collect(Collectors.groupingBy(record -> (String) record.get(groupName)));
+                    .collect(Collectors.groupingBy(record -> String.valueOf(record.get(groupName))));
 
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
-            Collections.sort(sortedKeys);
+//            Collections.sort(sortedKeys);
 
             if(Objects.equals(className, "Long"))
             // 准备各个统计值的列表
@@ -676,7 +672,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(finalResult);
         return finalResult;
     }
 
@@ -812,8 +807,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                 // 构建最终结果的series部分
                 List<LinkedHashMap<String, Object>> seriesResult = new ArrayList<>();
                 seriesResult.add(createSeriesMap("数量", countValues, "line", false, null));
-                seriesResult.add(createSeriesMap("最多出现次数", mostFrequentCounts, "line", false, mostFrequentStrings));
-                seriesResult.add(createSeriesMap("最少出现次数", leastFrequentCounts, "line", false, leastFrequentStrings));
+                seriesResult.add(createSeriesMapWithLabel("最多出现次数", mostFrequentCounts, "line", false, mostFrequentStrings));
+                seriesResult.add(createSeriesMapWithLabel("最少出现次数", leastFrequentCounts, "line", false, leastFrequentStrings));
 
                 // 将series和xValues添加到最终结果中
                 finalResult.put("series", seriesResult);
@@ -822,6 +817,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        System.out.println(finalResult);
         return finalResult;
     }
 }
