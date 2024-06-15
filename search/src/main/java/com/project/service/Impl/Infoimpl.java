@@ -559,7 +559,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                     .collect(Collectors.groupingBy(record -> String.valueOf(record.get(groupName))));
 
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
-//            Collections.sort(sortedKeys);
+            Collections.sort(sortedKeys);
 
             if(Objects.equals(className, "Long"))
             // 准备各个统计值的列表
