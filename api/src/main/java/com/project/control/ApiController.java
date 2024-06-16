@@ -2,11 +2,10 @@ package com.project.control;
 
 import com.project.service.IService.ApiService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,8 +19,23 @@ public class ApiController {
         return Service.apiCreate(map);
     }
 
-    @PostMapping("check")
-    public boolean check(@RequestBody Map<String, Object> map){
-        return Service.apiCheck(map);
+    @PostMapping("checksql")
+    public boolean checkSQL(@RequestBody Map<String, Object> map){
+        return Service.apiCheckSQL(map);
+    }
+
+    @PostMapping("checkname")
+    public boolean checkName(@RequestBody Map<String, Object> map){
+        return Service.apiCheckName(map);
+    }
+
+    @GetMapping("/selfDefine/{private}/{num}")
+    public List<LinkedHashMap<String, Object>> visit(@PathVariable("private") String privateKey, @PathVariable("num") int num){
+        return Service.Visit(privateKey, num);
+    }
+
+    @GetMapping("/info")
+    public List<LinkedHashMap<String, Object>> getAPIInfo(){
+        return Service.GetAPIInfo();
     }
 }

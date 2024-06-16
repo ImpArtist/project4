@@ -558,8 +558,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String groupName = map.get("group").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
-        System.out.println(groupName);
-        System.out.println(aggregate);
         String className;
         if (aggregate.contains(".")) {
             // 提取"."前面的内容作为table的值
@@ -567,8 +565,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             aggregate = aggregate.substring(aggregate.indexOf(".") + 1);
             groupName = groupName.substring(groupName.indexOf(".") + 1);
         }
-        System.out.println(groupName);
-        System.out.println(aggregate);
         className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
 
         String subAggregate = aggregate;
@@ -704,7 +700,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(finalResult);
         return finalResult;
     }
 
@@ -925,7 +920,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(finalResult);
         return finalResult;
     }
 }

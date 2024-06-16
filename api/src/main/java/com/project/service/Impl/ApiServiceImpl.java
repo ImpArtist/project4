@@ -5,6 +5,7 @@ import com.project.mapper.ApiMapper;
 import com.project.service.IService.ApiService;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,7 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
         String privacy = Optional.ofNullable(map.get("privacy")).orElse("").toString();
         String command = Optional.ofNullable(map.get("command")).orElse("").toString();
         String flowControl = Optional.ofNullable(map.get("flowControl")).orElse("").toString();
+        String business = Optional.ofNullable(map.get("business")).orElse("").toString();
         String url;
         int now,next;
         try {
@@ -29,7 +31,7 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
             else
                 url = res.get("api_url").toString();
             if(url.equals("Undefined")){
-                baseMapper.apiCreate(name, info, privacy, command, flowControl,"http://127.0.0.1:10010/api/selfDefind/"+privacy+"/1");
+                baseMapper.apiCreate(name, info, privacy, command, flowControl,business,"http://127.0.0.1:10010/api/selfDefind/"+privacy+"/1");
                 System.out.println("http://127.0.0.1:10010/api/selfDefind/"+privacy+"/1");
             }
             else {
@@ -42,7 +44,7 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
                     return false;
                 }
                 String replacedUrl = url.replaceAll("/" + now + "$", "/" + next);
-                baseMapper.apiCreate(name, info, privacy, command, flowControl, replacedUrl);
+                baseMapper.apiCreate(name, info, privacy, command, flowControl,business,replacedUrl);
             }
             return true;
         } catch (Exception e) {
@@ -53,7 +55,7 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
     }
 
     @Override
-    public boolean apiCheck(Map<String, Object> map) {
+    public boolean apiCheckSQL(Map<String, Object> map) {
         String sql = Optional.ofNullable(map.get("sql")).orElse("").toString();
         // 定义用于匹配 select 语句的正则表达式
         String selectRegex = "(?i)^\\s*SELECT\\s+.*\\s+FROM\\s+.*$";
@@ -75,4 +77,32 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
         }
         return true;
     }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> Visit(String privateKey, int num) {
+        List<LinkedHashMap<String, Object>> result=null;
+        try {
+            String url = "http://127.0.0.1:10010/api/selfDefine/" + privateKey + "/" + num;
+            List<LinkedHashMap<String, Object>> res = baseMapper.Visit(url);
+            String sql = Optional.ofNullable(res.get(0).get("api_command")).orElse("").toString();
+            result =  baseMapper.GetInfo(sql);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result;
+    }
+
+    @Override
+    public boolean apiCheckName(Map<String, Object> map) {
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        List<LinkedHashMap<String, Object>>  res = baseMapper.apiCheckName(name);
+        return !res.isEmpty();
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> GetAPIInfo() {
+        return baseMapper.GetAPIInfo();
+    }
+
+
 }
