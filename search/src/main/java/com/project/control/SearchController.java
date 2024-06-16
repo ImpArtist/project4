@@ -90,7 +90,12 @@ public class SearchController {
     }
 
     @PostMapping("/analysis/line")
-    public LinkedHashMap<String, Object> analyseLinechart(@RequestBody Map<String, Object> map) {
-        return Service.analyseLinechart(map);
+    public LinkedHashMap<String, Object> analyseLineChart(@RequestBody Map<String, Object> map) {
+        return Service.analyseLineChart(map);
+    }
+
+    @PostMapping("/analysis/pie")
+    public LinkedHashMap<String, Object> analysePieChart(@RequestBody Map<String, Object> map) {
+        return Service.analysePieChart(map);
     }
 }

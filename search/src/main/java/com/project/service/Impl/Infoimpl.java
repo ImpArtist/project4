@@ -122,6 +122,33 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         return map;
     }
 
+    private LinkedHashMap<String, Object> prepareSeries(String name, HashMap<Object, Integer> counts) {
+        LinkedHashMap<String, Object> series = new LinkedHashMap<>();
+        series.put("name", name);
+        series.put("type", "pie");
+        series.put("radius", "50%");
+
+        List<Map<String, Object>> chartDataList = new ArrayList<>();
+        for (Map.Entry<Object, Integer> entry : counts.entrySet()) {
+            Map<String, Object> dataItem = new LinkedHashMap<>();
+            dataItem.put("name", entry.getKey().toString());
+            dataItem.put("value", entry.getValue());
+            chartDataList.add(dataItem);
+        }
+        series.put("data", chartDataList);
+
+        // 添加emphasis样式
+        Map<String, Object> emphasis = new LinkedHashMap<>();
+        Map<String, Object> itemStyle = new LinkedHashMap<>();
+        itemStyle.put("shadowBlur", 10);
+        itemStyle.put("shadowOffsetX", 0);
+        itemStyle.put("shadowColor", "rgba(0, 0, 0, 0.5)");
+        emphasis.put("itemStyle", itemStyle);
+        series.put("emphasis", emphasis);
+
+        return series;
+    }
+
     public  List<LinkedHashMap<String, String>> queryListMapping(String table,String[] attributes){
         List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
         List<LinkedHashMap<String, String>> res=new ArrayList<>();
@@ -534,17 +561,21 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String groupName = map.get("group").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
-        String SubAggregate;
+        System.out.println(groupName);
+        System.out.println(aggregate);
         String className;
         if (aggregate.contains(".")) {
             // 提取"."前面的内容作为table的值
             table = aggregate.substring(0, aggregate.indexOf("."));
-            SubAggregate = aggregate.substring(aggregate.indexOf(".") + 1);
-            className = baseMapper.queryAttribute(table,SubAggregate).get(0).get("class_name").toString();
+            aggregate = aggregate.substring(aggregate.indexOf(".") + 1);
+            groupName = groupName.substring(groupName.indexOf(".") + 1);
         }
-        else
-            className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
-        System.out.println(className);
+        System.out.println(groupName);
+        System.out.println(aggregate);
+        className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+
+        String subAggregate = aggregate;
+        String subGroup = groupName;
         ObjectMapper objectMapper = new ObjectMapper();
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
@@ -556,7 +587,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
 
             Map<String, List<Map<String, Object>>> grouped = data.stream()
-                    .collect(Collectors.groupingBy(record -> String.valueOf(record.get(groupName))));
+                    .collect(Collectors.groupingBy(record -> String.valueOf(record.get(subGroup))));
 
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
@@ -574,7 +605,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                 List<Double> medianValues = new ArrayList<>();
                 List<Double> varianceValues = new ArrayList<>();
                 List<Double> modeValues = new ArrayList<>();
-
                 for (String element : sortedKeys) {
                     List<Map<String, Object>> group = grouped.get(element);
 
@@ -583,8 +613,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                     // 提取并处理分数数据
                     List<Double> aggregation = group.stream()
-                            .filter(record -> record.get(aggregate) != null)
-                            .map(record -> ((Number) record.get(aggregate)).doubleValue())
+                            .filter(record -> record.get(subAggregate) != null)
+                            .map(record -> ((Number) record.get(subAggregate)).doubleValue())
                             .collect(Collectors.toList());
 
                     double sum = aggregation.stream().mapToDouble(Double::doubleValue).sum();
@@ -605,7 +635,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                     stdDevValues.add(stdDev);
                     modeValues.add(mode);
                 }
-
                 // 构建最终结果
                 result.add(createResultMap("数量", countValues, "bar"));
                 result.add(createResultMap("总和", sumValues, "bar"));
@@ -637,8 +666,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                     // 提取需要聚合的字符串
                     List<String> aggregation = group.stream()
-                            .filter(record -> record.get(aggregate) != null)
-                            .map(record -> record.get(aggregate).toString())
+                            .filter(record -> record.get(subAggregate) != null)
+                            .map(record -> record.get(subAggregate).toString())
                             .collect(Collectors.toList());
 
                     // 计算频率
@@ -678,17 +707,77 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        System.out.println(finalResult);
         return finalResult;
     }
 
     @Override
-    public LinkedHashMap<String, Object> analyseLinechart(Map<String, Object> map) {
+    public LinkedHashMap<String, Object> analysePieChart(Map<String, Object> map) {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+
+        // 从map中提取数据
         Object dataObj = map.get("data");
-        String groupName = Optional.ofNullable(map.get("group")).orElse("").toString();
+        String groupName = map.get("group").toString();
+        String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        if (aggregate.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            aggregate = aggregate.substring(aggregate.indexOf(".") + 1);
+            groupName = groupName.substring(groupName.indexOf(".") + 1);
+        }
+        // 检查dataObj是否是List类型
+        if (!(dataObj instanceof List)) {
+            throw new IllegalArgumentException("Expected 'data' to be of type List");
+        }
+
+        // 类型转换
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> data = (List<Map<String, Object>>) dataObj;
+
+        // 使用HashMap来统计每个分组的聚合值出现次数
+        HashMap<Object, Integer> aggregateCounts = new HashMap<>();
+        // 使用HashMap来统计每个分组的记录数
+        HashMap<Object, Integer> groupCounts = new HashMap<>();
+
+        for (Map<String, Object> entry : data) {
+            // 统计聚合值出现的次数
+            Object aggregateValue = entry.get(aggregate);
+            aggregateCounts.put(aggregateValue, aggregateCounts.getOrDefault(aggregateValue, 0) + 1);
+
+            // 统计每个分组的记录数
+            Object groupValue = entry.get(groupName);
+            groupCounts.put(groupValue, groupCounts.getOrDefault(groupValue, 0) + 1);
+        }
+
+        // 准备series1数据
+        LinkedHashMap<String, Object> series1 = prepareSeries("计数", aggregateCounts);
+        // 准备series2数据
+        LinkedHashMap<String, Object> series2 = prepareSeries("记录数", groupCounts);
+
+        // 添加series1和series2到结果Map
+        result.put("series1", series1);
+        result.put("series2", series2);
+
+        return result;
+
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> analyseLineChart(Map<String, Object> map) {
+        Object dataObj = map.get("data");
+        String groupName = map.get("group").toString();
         String aggregate = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
-        String className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
-        System.out.println(className);
+        String className;
+        if (aggregate.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            table = aggregate.substring(0, aggregate.indexOf("."));
+            aggregate = aggregate.substring(aggregate.indexOf(".") + 1);
+            groupName = groupName.substring(groupName.indexOf(".") + 1);
+        }
+        className = baseMapper.queryAttribute(table,aggregate).get(0).get("class_name").toString();
+
+        String subAggregate = aggregate;
+        String subGroup = groupName;
         ObjectMapper objectMapper = new ObjectMapper();
 
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
@@ -698,10 +787,9 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
             });
 
-            data.sort(Comparator.comparing(record -> (String) record.get(groupName)));
 
             Map<String, List<Map<String, Object>>> grouped = data.stream()
-                    .collect(Collectors.groupingBy(record -> (String) record.get(groupName)));
+                    .collect(Collectors.groupingBy(record -> String.valueOf(record.get(subGroup))));
 
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
@@ -728,8 +816,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                     // 提取并处理分数数据
                     List<Double> aggregation = group.stream()
-                            .filter(record -> record.get(aggregate) != null)
-                            .map(record -> ((Number) record.get(aggregate)).doubleValue())
+                            .filter(record -> record.get(subAggregate) != null)
+                            .map(record -> ((Number) record.get(subAggregate)).doubleValue())
                             .collect(Collectors.toList());
 
                     double sum = aggregation.stream().mapToDouble(Double::doubleValue).sum();
@@ -782,8 +870,8 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
                     // 提取需要聚合的字符串
                     List<String> aggregation = group.stream()
-                            .filter(record -> record.get(aggregate) != null)
-                            .map(record -> record.get(aggregate).toString())
+                            .filter(record -> record.get(subAggregate) != null)
+                            .map(record -> record.get(subAggregate).toString())
                             .collect(Collectors.toList());
 
                     // 计算频率
