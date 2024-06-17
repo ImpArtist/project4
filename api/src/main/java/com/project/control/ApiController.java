@@ -15,7 +15,7 @@ public class ApiController {
     private final ApiService Service;
 
     @PostMapping("create")
-    public boolean create(@RequestBody Map<String, Object> map){
+    public LinkedHashMap<String, Object> create(@RequestBody Map<String, Object> map){
         return Service.apiCreate(map);
     }
 
@@ -25,7 +25,7 @@ public class ApiController {
     }
 
     @PostMapping("checkname")
-    public boolean checkName(@RequestBody Map<String, Object> map){
+    public LinkedHashMap<String, Object> checkName(@RequestBody Map<String, Object> map){
         return Service.apiCheckName(map);
     }
 

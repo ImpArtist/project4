@@ -15,24 +15,28 @@ import java.util.regex.Pattern;
 @Service
 public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements ApiService {
     @Override
-    public boolean apiCreate(Map<String, Object> map) {
+    public LinkedHashMap<String, Object> apiCreate(Map<String, Object> map) {
         String name = Optional.ofNullable(map.get("name")).orElse("").toString();
         String info = Optional.ofNullable(map.get("info")).orElse("").toString();
-        String privacy = Optional.ofNullable(map.get("privacy")).orElse("").toString();
         String command = Optional.ofNullable(map.get("command")).orElse("").toString();
         String flowControl = Optional.ofNullable(map.get("flowControl")).orElse("").toString();
         String business = Optional.ofNullable(map.get("business")).orElse("").toString();
-        String url;
-        int now,next;
+        String url = null;
+        boolean flag = true;
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        int now = 0,next = 0;
         try {
-            Map<String, Object> res = baseMapper.getUrl(privacy);
+            if(business.isEmpty()){
+                business = "public";
+            }
+            Map<String, Object> res = baseMapper.getUrl(business);
             if(res == null)
                 url = "Undefined";
             else
                 url = res.get("api_url").toString();
             if(url.equals("Undefined")){
-                baseMapper.apiCreate(name, info, privacy, command, flowControl,business,"http://127.0.0.1:10010/api/selfDefind/"+privacy+"/1");
-                System.out.println("http://127.0.0.1:10010/api/selfDefind/"+privacy+"/1");
+                baseMapper.apiCreate(name, info, business, command, flowControl,business,"http://127.0.0.1:10010/api/selfDefind/"+business+"/1");
+                url = "http://127.0.0.1:10010/api/selfDefind/"+business+"/1";
             }
             else {
                 String lastPart = url.substring(url.lastIndexOf("/") + 1);
@@ -41,17 +45,18 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
                     next = now + 1;
                 } catch (NumberFormatException e) {
                     System.out.println("number format error");
-                    return false;
+                    flag = false;
                 }
                 String replacedUrl = url.replaceAll("/" + now + "$", "/" + next);
-                baseMapper.apiCreate(name, info, privacy, command, flowControl,business,replacedUrl);
+                baseMapper.apiCreate(name, info, business, command, flowControl,business,replacedUrl);
             }
-            return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            System.out.println("error");
-            return false;
+            flag = false;
         }
+        result.put("judge",flag);
+        result.put("url",url);
+        return result;
     }
 
     @Override
@@ -93,10 +98,15 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
     }
 
     @Override
-    public boolean apiCheckName(Map<String, Object> map) {
+    public LinkedHashMap<String, Object> apiCheckName(Map<String, Object> map) {
         String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        boolean spacial = !name.contains(" ");
         List<LinkedHashMap<String, Object>>  res = baseMapper.apiCheckName(name);
-        return !res.isEmpty();
+        boolean flag = res.isEmpty();
+        result.put("judgeSpace",spacial);
+        result.put("judgeName",flag);
+        return result;
     }
 
     @Override

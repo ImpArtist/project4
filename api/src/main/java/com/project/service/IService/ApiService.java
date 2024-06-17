@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 public interface ApiService{
-    boolean apiCreate(Map<String, Object> map);
+    LinkedHashMap<String, Object> apiCreate(Map<String, Object> map);
 
     boolean apiCheckSQL(Map<String, Object> map);
 
     List<LinkedHashMap<String, Object>> Visit(String privateKey, int num);
 
-    boolean apiCheckName(Map<String, Object> map);
+    LinkedHashMap<String, Object> apiCheckName(Map<String, Object> map);
 
 
     List<LinkedHashMap<String, Object>> GetAPIInfo();
