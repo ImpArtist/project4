@@ -110,8 +110,13 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> GetAPIInfo() {
-        return baseMapper.GetAPIInfo();
+    public LinkedHashMap<String, Object> GetAPIInfo() {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        List<LinkedHashMap<String, Object>> res =  baseMapper.GetAPIInfo();
+        result.put("data",res);
+        List<LinkedHashMap<String, Object>> trans = baseMapper.GetTransInfo();
+        result.put("mapping",trans);
+        return result;
     }
 
 

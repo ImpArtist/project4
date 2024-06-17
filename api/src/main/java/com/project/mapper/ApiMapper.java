@@ -26,6 +26,9 @@ public interface ApiMapper extends BaseMapper<Object> {
     @Select("select api_id from api where api_name = #{name}")
     List<LinkedHashMap<String, Object>> apiCheckName(String name);
 
-    @Select("select api_id,api_name,api_info,api_privacy,api_command,api_flow_control,api_business,api_url from api where api_url = #{url}")
+    @Select("select api_id,api_name,api_url,api_info,api_command,api_business from api")
     List<LinkedHashMap<String, Object>> GetAPIInfo();
+
+    @Select("select attribute,translation from api_attribute order by privilege limit 6")
+    List<LinkedHashMap<String, Object>> GetTransInfo();
 }

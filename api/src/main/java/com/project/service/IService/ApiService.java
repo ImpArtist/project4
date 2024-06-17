@@ -17,5 +17,5 @@ public interface ApiService{
     LinkedHashMap<String, Object> apiCheckName(Map<String, Object> map);
 
 
-    List<LinkedHashMap<String, Object>> GetAPIInfo();
+    LinkedHashMap<String, Object> GetAPIInfo();
 }

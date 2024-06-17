@@ -34,8 +34,8 @@ public class ApiController {
         return Service.Visit(privateKey, num);
     }
 
-    @GetMapping("/info")
-    public List<LinkedHashMap<String, Object>> getAPIInfo(){
+    @PostMapping("/info")
+    public LinkedHashMap<String, Object> getAPIInfo(){
         return Service.GetAPIInfo();
     }
 }
