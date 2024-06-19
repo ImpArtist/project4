@@ -28,10 +28,10 @@ public interface ApiMapper extends BaseMapper<Object> {
     @Select("select api_id from api where api_name = #{name}")
     List<LinkedHashMap<String, Object>> apiCheckName(String name);
 
-    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count from api")
+    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count,api_status from api")
     List<LinkedHashMap<String, Object>> GetAPIInfo();
 
-    @Select("select attribute,translation from api_attribute order by privilege limit 7")
+    @Select("select attribute,translation from api_attribute order by privilege limit 8")
     List<LinkedHashMap<String, Object>> GetTransInfo();
 
     List<LinkedHashMap<String, Object>> getAPISelectedInfo(@Param("attribute") String attribute,@Param("value") String value,@Param("type") String type);
@@ -55,6 +55,6 @@ public interface ApiMapper extends BaseMapper<Object> {
     @Select("SELECT * FROM api_record WHERE api_record_time BETWEEN #{formattedDate} AND #{currentDate} and  api_record_name = #{name}")
     List<LinkedHashMap<String, Object>> getWithinRecordsByDay(@Param("formattedDate") String formattedDate, @Param("currentDate") LocalDateTime currentDate,@Param("name") String name);
 
-    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count from api WHERE api_name = #{name}")
+    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count,api_status from api WHERE api_name = #{name}")
     List<LinkedHashMap<String, Object>> getConcreteInfo(String name);
 }
