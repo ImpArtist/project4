@@ -12,10 +12,16 @@ public interface ApiService{
 
     boolean apiCheckSQL(Map<String, Object> map);
 
-    List<LinkedHashMap<String, Object>> Visit(String privateKey, int num);
+    List<LinkedHashMap<String, Object>> Visit(String privateKey, int num,String ip);
 
     LinkedHashMap<String, Object> apiCheckName(Map<String, Object> map);
 
 
     LinkedHashMap<String, Object> GetAPIInfo();
+
+    List<LinkedHashMap<String, Object>> getAPISelectedInfo(Map<String, Object> map);
+
+    boolean deleteAPI(Map<String, Object> map);
+
+    List<LinkedHashMap<String, Object>> getNameList(Map<String, Object> map);
 }

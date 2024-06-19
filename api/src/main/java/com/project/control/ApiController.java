@@ -1,7 +1,9 @@
 package com.project.control;
 
 import com.project.service.IService.ApiService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -13,6 +15,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ApiController {
     private final ApiService Service;
+    @Autowired
+    private HttpServletRequest request;
 
     @PostMapping("create")
     public LinkedHashMap<String, Object> create(@RequestBody Map<String, Object> map){
@@ -31,11 +35,34 @@ public class ApiController {
 
     @GetMapping("/selfDefine/{private}/{num}")
     public List<LinkedHashMap<String, Object>> visit(@PathVariable("private") String privateKey, @PathVariable("num") int num){
-        return Service.Visit(privateKey, num);
+        String ipAddress = request.getHeader("X-Forwarded-For");
+
+        // 如果 X-Forwarded-For 为空，使用 getRemoteAddr 方法获取 IP
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+
+        return Service.Visit(privateKey, num, ipAddress);
     }
 
     @PostMapping("/info")
     public LinkedHashMap<String, Object> getAPIInfo(){
         return Service.GetAPIInfo();
     }
+
+    @PostMapping("/selectInfo")
+    public List<LinkedHashMap<String, Object>> getAPISelectedInfo(@RequestBody Map<String, Object> map){
+        return Service.getAPISelectedInfo(map);
+    }
+
+    @PostMapping("/delete")
+    public boolean deleteAPI(@RequestBody Map<String, Object> map){
+        return Service.deleteAPI(map);
+    }
+
+    @PostMapping("/getNameList")
+    public List<LinkedHashMap<String, Object>> getNameList(@RequestBody Map<String, Object> map){
+        return Service.getNameList(map);
+    }
+
 }

@@ -31,4 +31,21 @@ public interface ApiMapper extends BaseMapper<Object> {
 
     @Select("select attribute,translation from api_attribute order by privilege limit 6")
     List<LinkedHashMap<String, Object>> GetTransInfo();
+
+    List<LinkedHashMap<String, Object>> getAPISelectedInfo(@Param("attribute") String attribute,@Param("value") String value,@Param("type") String type);
+
+    @Select("DELETE FROM api WHERE api_name = #{name}")
+    void deleteAPI(@Param("name") String name);
+
+    @Select("select api_name from api where api_name like CONCAT('%', #{value}, '%') order by api_id")
+    List<LinkedHashMap<String, Object>> getNameList(String value);
+
+    @Select("SELECT api_name from api where api_url = #{url}")
+    List<LinkedHashMap<String, Object>> getAPIName(String url);
+
+    @Select("UPDATE api SET api_view_count = api_view_count + 1 WHERE api_url = #{url}")
+    void updateAPI(@Param("url") String url);
+
+    @Select("INSERT INTO api_record (api_record_name,api_record_ip,api_record_time) VALUES (#{name},#{ip},#{time}) ")
+    void updateAPIRecord(@Param("name") String name,@Param("ip") String ip,@Param("time") String time);
 }

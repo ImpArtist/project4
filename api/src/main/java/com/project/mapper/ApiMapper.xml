@@ -6,4 +6,17 @@
         INSERT INTO api (api_name, api_info, api_privacy, api_command, api_flow_control,api_business,api_url)
         VALUES (#{name}, #{info}, #{privacy}, #{command}, #{flowControl},#{business},#{url})
     </insert>
+
+    <select id="getAPISelectedInfo">
+        SELECT api_id,api_name,api_url,api_info,api_command,api_business FROM api
+        <choose>
+            <when test="type == '全字搜索'">
+                WHERE ${attribute} = #{value}
+            </when>
+            <otherwise>
+                WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
+            </otherwise>
+        </choose>
+
+    </select>
 </mapper>

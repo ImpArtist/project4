@@ -3,12 +3,12 @@ package com.project.service.Impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.mapper.ApiMapper;
 import com.project.service.IService.ApiService;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,13 +84,23 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> Visit(String privateKey, int num) {
+    public List<LinkedHashMap<String, Object>> Visit(String privateKey, int num,String ip) {
         List<LinkedHashMap<String, Object>> result=null;
         try {
             String url = "http://127.0.0.1:10010/api/selfDefine/" + privateKey + "/" + num;
             List<LinkedHashMap<String, Object>> res = baseMapper.Visit(url);
             String sql = Optional.ofNullable(res.get(0).get("api_command")).orElse("").toString();
             result =  baseMapper.GetInfo(sql);
+            baseMapper.updateAPI(url);
+            String name = baseMapper.getAPIName(url).get(0).get("api_name").toString();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 格式化时间输出，具体到秒
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = now.format(formatter);
+
+            // 打印输出
+            System.out.println("Current time: " + formattedDateTime);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -117,6 +127,39 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
         List<LinkedHashMap<String, Object>> trans = baseMapper.GetTransInfo();
         result.put("mapping",trans);
         return result;
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> getAPISelectedInfo(Map<String, Object> map) {
+        String attribute = Optional.ofNullable(map.get("attribute")).orElse("").toString();
+        String type = Optional.ofNullable(map.get("type")).orElse("").toString();
+        String value = Optional.ofNullable(map.get("value")).orElse("").toString();
+        return baseMapper.getAPISelectedInfo(attribute,value,type);
+    }
+
+    @Override
+    public boolean deleteAPI(Map<String, Object> map) {
+        boolean ans = true;
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        try{
+            baseMapper.deleteAPI(name);
+        }catch (Exception e){
+            ans = false;
+            System.out.println(e.getMessage());
+        }
+        return ans;
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> getNameList(Map<String, Object> map) {
+        String value= Optional.ofNullable(map.get("value")).orElse("").toString();
+        List<LinkedHashMap<String, Object>> res = new ArrayList<>();
+        try{
+            res = baseMapper.getNameList(value);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return res;
     }
 
 
