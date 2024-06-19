@@ -65,4 +65,14 @@ public class ApiController {
         return Service.getNameList(map);
     }
 
+    @PostMapping("getConcreteChartsInfo")
+    public LinkedHashMap<String, Object> getConcreteChartsInfo(@RequestBody Map<String, Object> map){
+        return Service.getConcreteChartsInfo(map);
+    }
+
+    @PostMapping("getConcreteInfo")
+    public LinkedHashMap<String, Object> getConcreteInfo(@RequestBody Map<String, Object> map){
+        return Service.getConcreteInfo(map);
+    }
+
 }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +28,10 @@ public interface ApiMapper extends BaseMapper<Object> {
     @Select("select api_id from api where api_name = #{name}")
     List<LinkedHashMap<String, Object>> apiCheckName(String name);
 
-    @Select("select api_id,api_name,api_url,api_info,api_command,api_business from api")
+    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count from api")
     List<LinkedHashMap<String, Object>> GetAPIInfo();
 
-    @Select("select attribute,translation from api_attribute order by privilege limit 6")
+    @Select("select attribute,translation from api_attribute order by privilege limit 7")
     List<LinkedHashMap<String, Object>> GetTransInfo();
 
     List<LinkedHashMap<String, Object>> getAPISelectedInfo(@Param("attribute") String attribute,@Param("value") String value,@Param("type") String type);
@@ -48,4 +50,11 @@ public interface ApiMapper extends BaseMapper<Object> {
 
     @Select("INSERT INTO api_record (api_record_name,api_record_ip,api_record_time) VALUES (#{name},#{ip},#{time}) ")
     void updateAPIRecord(@Param("name") String name,@Param("ip") String ip,@Param("time") String time);
+
+
+    @Select("SELECT * FROM api_record WHERE api_record_time BETWEEN #{formattedDate} AND #{currentDate} and  api_record_name = #{name}")
+    List<LinkedHashMap<String, Object>> getWithinRecordsByDay(@Param("formattedDate") String formattedDate, @Param("currentDate") LocalDateTime currentDate,@Param("name") String name);
+
+    @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count from api WHERE api_name = #{name}")
+    List<LinkedHashMap<String, Object>> getConcreteInfo(String name);
 }

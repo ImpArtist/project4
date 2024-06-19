@@ -6,11 +6,14 @@ import com.project.service.IService.ApiService;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements ApiService {
@@ -94,7 +97,7 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
             baseMapper.updateAPI(url);
             String name = baseMapper.getAPIName(url).get(0).get("api_name").toString();
             LocalDateTime now = LocalDateTime.now();
-
+            baseMapper.updateAPIRecord(name,ip,now.toString());
             // 格式化时间输出，具体到秒
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedDateTime = now.format(formatter);
@@ -161,6 +164,198 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
         }
         return res;
     }
+
+    @Override
+    public LinkedHashMap<String, Object> getConcreteChartsInfo(Map<String, Object> map) {
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        String type = Optional.ofNullable(map.get("type")).orElse("").toString();
+        LocalDate currentDate = LocalDate.now();
+        LocalDate daysAgo = currentDate;
+        List<LinkedHashMap<String, Object>> records = new ArrayList<>();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        if (type.equals("最近一个月")) {
+            daysAgo = currentDate.minusDays(30);
+        } else if (type.equals("最近一个星期")) {
+            daysAgo = currentDate.minusDays(7);
+        } else if (type.equals("最近一天")) {
+            LocalDateTime exactTimeAgo = currentDateTime.minusDays(1); // 减去一天
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = exactTimeAgo.format(formatter);
+            records = baseMapper.getWithinRecordsByDay(formattedDateTime, currentDateTime,name);
+        }
+        if(!type.equals("最近一天")) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = daysAgo.format(formatter);
+            records = baseMapper.getWithinRecordsByDay(formattedDate, currentDateTime,name);
+        }
+
+        System.out.println(records);
+        List<String> x = new ArrayList<>();
+        List<Long> values;
+
+        values = switch (type) {
+            case "最近一个月" -> {
+                generateDaysAgo(x, 30);
+                yield countRecordsByDayAgo(records, currentDate.minusMonths(1), currentDate, x);
+            }
+            case "最近一个星期" -> {
+                generateDaysAgo(x, 7);
+                yield countRecordsByDayAgo(records, currentDate.minusWeeks(1), currentDate, x);
+            }
+            case "最近一天" -> {
+                generateHoursAgo(x, 24);
+                yield countRecordsByHourAgo(records, currentDateTime.minusDays(1), currentDateTime, x);
+
+            }
+            default -> throw new IllegalArgumentException("Unsupported type: " + type);
+        };
+
+        Map<String, Integer> ipCountMap = new HashMap<>();
+        for (Map<String, Object> record : records) {
+            String ip = (String) record.get("api_record_ip");
+            ipCountMap.put(ip, ipCountMap.getOrDefault(ip, 0) + 1);
+        }
+
+        // Step 2: Sort by occurrence count descending
+        List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(ipCountMap.entrySet());
+        sortedEntries.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+        // Step 3: Find the top 5 IPs with the most occurrences
+        List<LinkedHashMap<String, Object>> result_ = new ArrayList<>();
+        int totalRecords = records.size();
+        int threshold = totalRecords / 10; // 1/10 of total records
+
+        int remainingCount = 0;
+        LinkedHashMap<String, Object> otherMap = new LinkedHashMap<>();
+
+        for (int i = 0; i < sortedEntries.size(); i++) {
+            String ip = sortedEntries.get(i).getKey();
+            int count = sortedEntries.get(i).getValue();
+
+            if (i < 5) {
+                LinkedHashMap<String, Object> entryMap = new LinkedHashMap<>();
+                entryMap.put("name", ip);
+                entryMap.put("value", count);
+                result_.add(entryMap);
+            } else {
+                if (count < threshold) {
+                    remainingCount += count;
+                } else {
+                    LinkedHashMap<String, Object> entryMap = new LinkedHashMap<>();
+                    entryMap.put("name", ip);
+                    entryMap.put("value", count);
+                    result_.add(entryMap);
+                }
+            }
+        }
+
+        // Step 4: Add "其他" entry if there are remaining IPs with count less than threshold
+        if (remainingCount > 0) {
+            otherMap.put("name", "其他");
+            otherMap.put("value", remainingCount);
+            result_.add(otherMap);
+        }
+
+        Map<String, Object> series = new LinkedHashMap<>();
+        series.put("name", "计数");
+        series.put("type", "pie");
+        series.put("radius", "50%");
+
+
+        series.put("data", result_);
+
+        // 构建emphasis对象
+        Map<String, Object> emphasis = new LinkedHashMap<>();
+        Map<String, Object> itemStyle = new LinkedHashMap<>();
+        itemStyle.put("shadowBlur", 10);
+        itemStyle.put("shadowOffsetX", 0);
+        itemStyle.put("shadowColor", "rgba(0, 0, 0, 0.5)");
+        emphasis.put("itemStyle", itemStyle);
+        series.put("emphasis", emphasis);
+
+        List<LinkedHashMap<String, Object>> bar =  new ArrayList<>();
+        LinkedHashMap<String, Object> barMap = new LinkedHashMap<>();
+        barMap.put("name", "访问数");
+        barMap.put("data", values);
+        barMap.put("type", "bar");
+        bar.add(barMap);
+
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        result.put("xValues", x);
+        result.put("pie", series);
+        result.put("bar", bar);
+        return result;
+    }
+
+
+    private void generateDaysAgo(List<String> x, int max) {
+        for (int i = 0; i < max; i++) {
+            x.add(String.valueOf(i + 1));
+        }
+    }
+
+    private void generateHoursAgo(List<String> x, int max) {
+        for (int i = 0; i < max; i++) {
+            x.add(String.valueOf(i));
+        }
+    }
+
+
+    private List<Long> countRecordsByDayAgo(List<LinkedHashMap<String, Object>> records, LocalDate start, LocalDate end, List<String> x) {
+        Map<String, Long> dayCounts = records.stream()
+                .collect(Collectors.groupingBy(record -> {
+                    String time = record.get("api_record_time").toString().split(" ")[0]; // 移除小数点和后续的所有字符
+                    LocalDate recordDate = LocalDate.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    LocalDate currentDate =  LocalDate.now();
+                    return getDayAgoString(currentDate, recordDate);
+                }, Collectors.counting()));
+
+        return fillValues(x, dayCounts);
+    }
+
+    private List<Long> countRecordsByHourAgo(List<LinkedHashMap<String, Object>> records, LocalDateTime start, LocalDateTime end, List<String> x) {
+        Map<String, Long> hourCounts = records.stream()
+                .collect(Collectors.groupingBy(record -> {
+                    String time = record.get("api_record_time").toString().split("\\.")[0];
+                    LocalDateTime recordTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    return getHourAgoString(recordTime, currentDateTime);
+                }, Collectors.counting()));
+
+        return fillValues(x, hourCounts);
+    }
+
+    private String getDayAgoString(LocalDate currentDate, LocalDate recordDate) {
+        long daysBetween = ChronoUnit.DAYS.between(recordDate, currentDate);
+        return String.valueOf(daysBetween);
+    }
+
+    private String getHourAgoString(LocalDateTime recordTime, LocalDateTime currentDateTime) {
+        long hoursBetween = ChronoUnit.HOURS.between(recordTime, currentDateTime);
+        return String.valueOf(hoursBetween);
+    }
+
+    private List<Long> fillValues(List<String> x, Map<String, Long> dayOrHourCounts) {
+        List<Long> values = new ArrayList<>();
+        for (String dayOrHour : x) {
+            Long count = dayOrHourCounts.getOrDefault(dayOrHour, 0L);
+            values.add(count);
+        }
+        return values;
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> getConcreteInfo(Map<String, Object> map) {
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        try{
+            return baseMapper.getConcreteInfo(name).get(0);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return new LinkedHashMap<>();
+    }
+
+
 
 
 }

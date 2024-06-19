@@ -24,4 +24,8 @@ public interface ApiService{
     boolean deleteAPI(Map<String, Object> map);
 
     List<LinkedHashMap<String, Object>> getNameList(Map<String, Object> map);
+
+    LinkedHashMap<String, Object> getConcreteChartsInfo(Map<String, Object> map);
+
+    LinkedHashMap<String, Object> getConcreteInfo(Map<String, Object> map);
 }
