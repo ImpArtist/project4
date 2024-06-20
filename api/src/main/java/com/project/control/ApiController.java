@@ -76,12 +76,12 @@ public class ApiController {
     }
 
     @PostMapping("open")
-    public void open(@RequestBody Map<String, Object> map){
+    public boolean open(@RequestBody Map<String, Object> map){
         Service.open(map);
     }
 
     @PostMapping("close")
-    public void close(@RequestBody Map<String, Object> map){
+    public boolean close(@RequestBody Map<String, Object> map){
         Service.close(map);
     }
 

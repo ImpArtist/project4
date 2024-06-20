@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements ApiService {
@@ -276,16 +277,31 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         itemStyle.put("shadowColor", "rgba(0, 0, 0, 0.5)");
         emphasis.put("itemStyle", itemStyle);
         series.put("emphasis", emphasis);
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        DateTimeFormatter formatter_ = DateTimeFormatter.ofPattern("HH:00");
+        List<String> values_ = switch (type) {
+            case "最近一个月" -> IntStream.rangeClosed(1, 30)
+                    .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
+                    .toList();
+            case "最近一个星期" -> IntStream.rangeClosed(1, 7)
+                    .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
+                    .toList();
+            case "最近一天" -> IntStream.rangeClosed(0, 23)
+                    .mapToObj(hoursAgo -> LocalDateTime.now().minusHours(hoursAgo).withMinute(0).withSecond(0).withNano(0).format(formatter_))
+                    .collect(Collectors.toList());
+            default -> new ArrayList<>();
+        };
+        // 生成从1到30天前的日期，并格式化为不包含年份的字符串
         List<LinkedHashMap<String, Object>> bar =  new ArrayList<>();
         LinkedHashMap<String, Object> barMap = new LinkedHashMap<>();
         barMap.put("name", "访问数");
         barMap.put("data", values);
-        barMap.put("type", "bar");
+        barMap.put("type", "line");
+        barMap.put("smooth", "true");
         bar.add(barMap);
 
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
-        result.put("xValues", x);
+        result.put("xValues", values_);
         result.put("pie", series);
         result.put("bar", bar);
         return result;
@@ -360,15 +376,17 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
     }
 
     @Override
-    public void open(Map<String, Object> map) {
+    public boolean open(Map<String, Object> map) {
         String name = Optional.ofNullable(map.get("name")).orElse("").toString();
         baseMapper.open(name);
+        return true;
     }
 
     @Override
-    public void close(Map<String, Object> map) {
+    public boolean close(Map<String, Object> map) {
         String name = Optional.ofNullable(map.get("name")).orElse("").toString();
         baseMapper.close(name);
+        return true;
     }
 
 

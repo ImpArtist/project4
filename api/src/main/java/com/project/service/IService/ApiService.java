@@ -29,7 +29,7 @@ public interface ApiService{
 
     LinkedHashMap<String, Object> getConcreteInfo(Map<String, Object> map);
 
-    void open(Map<String, Object> map);
+    boolean open(Map<String, Object> map);
 
-    void close(Map<String, Object> map);
+    boolean close(Map<String, Object> map);
 }
