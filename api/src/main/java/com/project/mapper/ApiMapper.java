@@ -19,7 +19,7 @@ public interface ApiMapper extends BaseMapper<Object> {
     @Select("${sql}")
     public List<Map<String,Object>> apiCheck(@Param("sql") String sql);
 
-    @Select("select api_command from api where api_url = #{url}")
+    @Select("select api_command,api_status from api where api_url = #{url}")
     List<LinkedHashMap<String, Object>> Visit(@Param("url") String url);
 
     @Select("${sql}")

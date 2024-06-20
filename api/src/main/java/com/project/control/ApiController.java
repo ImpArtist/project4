@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,14 @@ public class ApiController {
             ipAddress = request.getRemoteAddr();
         }
 
-        return Service.Visit(privateKey, num, ipAddress);
+        List<LinkedHashMap<String, Object>> result = Service.Visit(privateKey, num, ipAddress);
+        if(result == null){
+            result = new ArrayList<>();
+            LinkedHashMap<String, Object> error = new LinkedHashMap<>();
+            error.put("error", "该API已被停用，请联系相关人员");
+            result.add(error);
+        }
+        return result;
     }
 
     @PostMapping("/info")
@@ -78,11 +86,13 @@ public class ApiController {
     @PostMapping("open")
     public boolean open(@RequestBody Map<String, Object> map){
         Service.open(map);
+        return true;
     }
 
     @PostMapping("close")
     public boolean close(@RequestBody Map<String, Object> map){
         Service.close(map);
+        return true;
     }
 
 }

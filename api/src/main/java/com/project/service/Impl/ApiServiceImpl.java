@@ -103,12 +103,8 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
             String name = baseMapper.getAPIName(url).get(0).get("api_name").toString();
             LocalDateTime now = LocalDateTime.now();
             baseMapper.updateAPIRecord(name,ip,now.toString());
-            // 格式化时间输出，具体到秒
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDateTime = now.format(formatter);
 
             // 打印输出
-            System.out.println("Current time: " + formattedDateTime);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -297,7 +293,6 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         barMap.put("name", "访问数");
         barMap.put("data", values);
         barMap.put("type", "line");
-        barMap.put("smooth", "true");
         bar.add(barMap);
 
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
