@@ -39,4 +39,8 @@ public interface IService {
     LinkedHashMap<String, Object> analyseLineChart(Map<String, Object> map);
 
     LinkedHashMap<String, Object> analysePieChart(Map<String, Object> map);
+
+    LinkedHashMap<String, Object> analyseData(Map<String, Object> map);
+
+    String analyseGetClass(Map<String, Object> map);
 }

@@ -3,7 +3,6 @@ package com.project.service.Impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.mapper.ApiMapper;
 import com.project.service.IService.ApiService;
-import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,7 +15,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements ApiService {
+public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements ApiService {
+
+    String baseUrl = "127.0.0.1";
     @Override
     public LinkedHashMap<String, Object> apiCreate(Map<String, Object> map) {
         String name = Optional.ofNullable(map.get("name")).orElse("").toString();
@@ -38,8 +39,8 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
             else
                 url = res.get("api_url").toString();
             if(url.equals("Undefined")){
-                baseMapper.apiCreate(name, info, business, command, flowControl,business,"http://127.0.0.1:10010/api/selfDefind/"+business+"/1");
-                url = "http://127.0.0.1:10010/api/selfDefind/"+business+"/1";
+                baseMapper.apiCreate(name, info, business, command, flowControl,business,"http://" + baseUrl + ":10010/api/selfDefine/" + business + "/1");
+                url = "http://" + baseUrl + ":10010/api/selfDefine/" + business + "/1";
             }
             else {
                 String lastPart = url.substring(url.lastIndexOf("/") + 1);
@@ -90,9 +91,12 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
     public List<LinkedHashMap<String, Object>> Visit(String privateKey, int num,String ip) {
         List<LinkedHashMap<String, Object>> result=null;
         try {
-            String url = "http://127.0.0.1:10010/api/selfDefine/" + privateKey + "/" + num;
+            String url = "http://"+ baseUrl + ":10010/api/selfDefine/" + privateKey + "/" + num;
             List<LinkedHashMap<String, Object>> res = baseMapper.Visit(url);
             String sql = Optional.ofNullable(res.get(0).get("api_command")).orElse("").toString();
+            String status = Optional.ofNullable(res.get(0).get("api_status")).orElse("").toString();
+            if(status.equals("停止"))
+                return null;
             result =  baseMapper.GetInfo(sql);
             baseMapper.updateAPI(url);
             String name = baseMapper.getAPIName(url).get(0).get("api_name").toString();
@@ -355,7 +359,17 @@ public class ApiServiceImpl  extends ServiceImpl<ApiMapper, Object> implements A
         return new LinkedHashMap<>();
     }
 
+    @Override
+    public void open(Map<String, Object> map) {
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        baseMapper.open(name);
+    }
 
+    @Override
+    public void close(Map<String, Object> map) {
+        String name = Optional.ofNullable(map.get("name")).orElse("").toString();
+        baseMapper.close(name);
+    }
 
 
 }

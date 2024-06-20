@@ -98,4 +98,16 @@ public class SearchController {
     public LinkedHashMap<String, Object> analysePieChart(@RequestBody Map<String, Object> map) {
         return Service.analysePieChart(map);
     }
+
+    @PostMapping("/analysis/all")
+    public LinkedHashMap<String, Object> analyseData(@RequestBody Map<String, Object> map) {
+        return Service.analyseData(map);
+    }
+
+    @PostMapping("/analysis/getClass")
+    public String analyseGetClass(@RequestBody Map<String, Object> map) {
+        return Service.analyseGetClass(map);
+    }
+
+
 }

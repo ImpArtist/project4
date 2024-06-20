@@ -28,4 +28,8 @@ public interface ApiService{
     LinkedHashMap<String, Object> getConcreteChartsInfo(Map<String, Object> map);
 
     LinkedHashMap<String, Object> getConcreteInfo(Map<String, Object> map);
+
+    void open(Map<String, Object> map);
+
+    void close(Map<String, Object> map);
 }

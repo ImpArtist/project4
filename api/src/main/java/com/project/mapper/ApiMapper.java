@@ -57,4 +57,10 @@ public interface ApiMapper extends BaseMapper<Object> {
 
     @Select("select api_id,api_name,api_url,api_info,api_command,api_business,api_view_count,api_status from api WHERE api_name = #{name}")
     List<LinkedHashMap<String, Object>> getConcreteInfo(String name);
+
+    @Select("update api set api_status = '运行' WHERE api_name = #{name}")
+    void open(String name);
+
+    @Select("update api set api_status = '停止' WHERE api_name = #{name}")
+    void close(String name);
 }

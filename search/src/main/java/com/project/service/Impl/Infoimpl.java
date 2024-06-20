@@ -23,10 +23,10 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     public  String configerSQL(String table,String[] attributes){
         List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
         StringBuilder selectClause = new StringBuilder();
-        Map<String, String> attributeMap = new HashMap<>();
-        for (AttributeTranslation translation : attributeTranslations) {
-            attributeMap.put(translation.getAttribute(), translation.getTranslation());
-        }
+//        Map<String, String> attributeMap = new HashMap<>();
+//        for (AttributeTranslation translation : attributeTranslations) {
+//            attributeMap.put(translation.getAttribute(), translation.getTranslation());
+//        }
         if(attributes.length != 0) {
             for (String attribute : attributes) {
                 selectClause.append(attribute)
@@ -100,7 +100,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     private LinkedHashMap<String, Object> createSeriesMapWithLabel(String name, List<?> data, String type, boolean smooth, List<String> labels) {
         LinkedHashMap<String, Object> map = createSeriesMap(name, data, type, smooth,null);
 
-        // 创建 formatter 函数字符串
+
         StringBuilder formatter = new StringBuilder("function(params) { const labels = [");
         for (int i = 0; i < labels.size(); i++) {
             String label = labels.get(i).replace("\"", "\\\"");
@@ -122,29 +122,6 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         return map;
     }
 
-//    private List<Map<String, Object>> convertToPieChartData(String seriesName, HashMap<Object, Integer> counts) {
-//        List<Map<String, Object>> chartDataList = new ArrayList<>();
-//        for (Map.Entry<Object, Integer> entry : counts.entrySet()) {
-//            Map<String, Object> dataItem = new LinkedHashMap<>();
-//            dataItem.put("value", entry.getValue());
-//            dataItem.put("name", entry.getKey().toString());
-//            chartDataList.add(dataItem);
-//        }
-//        return chartDataList;
-//    }
-//
-//    // 辅助方法，添加emphasis样式
-//    private void addEmphasisStyle(Map<String, Object> series) {
-//        Map<String, Object> itemStyle = new LinkedHashMap<>();
-//        itemStyle.put("shadowBlur", 10);
-//        itemStyle.put("shadowOffsetX", 0);
-//        itemStyle.put("shadowColor", "rgba(0, 0, 0, 0.5)");
-//
-//        Map<String, Object> emphasis = new LinkedHashMap<>();
-//        emphasis.put("itemStyle", itemStyle);
-//
-//        series.put("emphasis", emphasis);
-//    }
 
     public  List<LinkedHashMap<String, String>> queryListMapping(String table,String[] attributes){
         List<AttributeTranslation> attributeTranslations = selectAttributeTranslations(table);
@@ -498,7 +475,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         String modifiedAggregate = "";
         if(!Objects.equals(ArraysToString(aggregateTypes), ""))
             modifiedAggregate = String.join(",", normalList);
-        List<LinkedHashMap<String, Object>> res = new ArrayList<>();
+        List<LinkedHashMap<String, Object>> res;
         try {
             if (countValue != null && !countValue.isEmpty()&&Integer.parseInt(countValue)!=0)
                 count = Integer.parseInt(countValue);
@@ -575,7 +552,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
         LinkedHashMap<String, Object> finalResult = new LinkedHashMap<>();
         try {
-            List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<List<Map<String, Object>>>() {
+            List<Map<String, Object>> data = objectMapper.convertValue(dataObj, new TypeReference<>() {
             });
 
 
@@ -661,7 +638,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                     List<String> aggregation = group.stream()
                             .filter(record -> record.get(subAggregate) != null)
                             .map(record -> record.get(subAggregate).toString())
-                            .collect(Collectors.toList());
+                            .toList();
 
                     // 计算频率
                     Map<String, Long> frequencyMap = aggregation.stream()
@@ -737,6 +714,126 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
         result.put("series2", series2);
 
         return result;
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> analyseData(Map<String, Object> map) {
+        Object dataObj = map.get("data");
+        String aggregate_ = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        String className;
+        if (aggregate_.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            table = aggregate_.substring(0, aggregate_.indexOf("."));
+            aggregate_ = aggregate_.substring(aggregate_.indexOf(".") + 1);
+        }
+        className = baseMapper.queryAttribute(table, aggregate_).get(0).get("class_name").toString();
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        String aggregate = aggregate_;
+
+        List<Map<String, Object>> data = (List<Map<String, Object>>) dataObj;
+
+        if (className.equals("String")) {
+            Map<String, Long> freqMap = data.stream()
+                    .collect(Collectors.groupingBy(e -> e.get(aggregate).toString(), Collectors.counting()));
+
+            String maxKey = Collections.max(freqMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+            String minKey = Collections.min(freqMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+
+            long maxCount = freqMap.get(maxKey);
+            long minCount = freqMap.get(minKey);
+            long totalCount = data.size();
+
+            result.put("最多出现", maxKey);
+            result.put("最多出现次数", maxCount);
+            result.put("最多出现占比", (double) maxCount / totalCount * 100);
+
+            result.put("最少出现", minKey);
+            result.put("最少出现次数", minCount);
+            result.put("最少出现占比", (double) minCount / totalCount * 100);
+        }
+
+        if (className.equals("Date")) {
+            Map<String, Long> freqMap = data.stream()
+                    .collect(Collectors.groupingBy(e -> e.get(aggregate).toString(), Collectors.counting()));
+
+            String maxKey = Collections.max(freqMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+            String minKey = Collections.min(freqMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+
+            long maxCount = freqMap.get(maxKey);
+            long minCount = freqMap.get(minKey);
+            long totalCount = data.size();
+
+            List<String> dates = data.stream()
+                    .map(e -> (String)e.get(aggregate))
+                    .toList();
+
+            String maxDate = Collections.max(dates);
+            String minDate = Collections.min(dates);
+
+            result.put("最多出现", maxKey);
+            result.put("最多出现次数", maxCount);
+            result.put("最多出现占比", (double) maxCount / totalCount * 100);
+
+            result.put("最少出现", minKey);
+            result.put("最少出现次数", minCount);
+            result.put("最少出现占比", (double) minCount / totalCount * 100);
+
+            result.put("最大日期", maxDate);
+            result.put("最小日期", minDate);
+        }
+
+        if (className.equals("Long")) {
+            List<Integer> values = data.stream()
+                    .map(e -> (Integer) e.get(aggregate))
+                    .sorted()
+                    .toList();
+
+            double average = values.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
+            long maxValue = Collections.max(values);
+            long minValue = Collections.min(values);
+
+            //long sum = values.stream().mapToLong(Long::longValue).sum();
+            int size = values.size();
+            double median = size % 2 == 0 ?
+                    (values.get(size / 2 - 1) + values.get(size / 2)) / 2.0 :
+                    values.get(size / 2);
+
+            Map<Long, Long> freqMap = values.stream()
+                    .collect(Collectors.groupingBy(Integer::longValue, Collectors.counting()));
+
+            long mode = freqMap.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(0L);
+
+            double variance = values.stream()
+                    .mapToDouble(v -> Math.pow(v - average, 2))
+                    .average()
+                    .orElse(0.0);
+
+            result.put("平均值", average);
+            result.put("众数", mode);
+            result.put("众数出现次数", size);
+            result.put("中位数", median);
+            result.put("最大值", maxValue);
+            result.put("最小值", minValue);
+            result.put("方差", variance);
+        }
+
+        return result;
+    }
+
+    @Override
+    public String analyseGetClass(Map<String, Object> map) {
+        String aggregate_ = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
+        String table = Optional.ofNullable(map.get("table")).orElse("").toString();
+        if (aggregate_.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            table = aggregate_.substring(0, aggregate_.indexOf("."));
+            aggregate_ = aggregate_.substring(aggregate_.indexOf(".") + 1);
+        }
+        return baseMapper.queryAttribute(table, aggregate_).get(0).get("class_name").toString();
     }
 
     private List<Map<String, Object>> createSeriesDataList(String seriesName, Map<Object, Integer> countMap) {
@@ -881,7 +978,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                     List<String> aggregation = group.stream()
                             .filter(record -> record.get(subAggregate) != null)
                             .map(record -> record.get(subAggregate).toString())
-                            .collect(Collectors.toList());
+                            .toList();
 
                     // 计算频率
                     Map<String, Long> frequencyMap = aggregation.stream()
