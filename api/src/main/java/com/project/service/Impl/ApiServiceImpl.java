@@ -279,7 +279,7 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
             case "最近一个月" -> IntStream.rangeClosed(0, 29)
                     .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
                     .toList();
-            case "最近一个星期" -> IntStream.rangeClosed(0, 7)
+            case "最近一个星期" -> IntStream.rangeClosed(0, 6)
                     .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
                     .toList();
             case "最近一天" -> IntStream.rangeClosed(0, 23)
