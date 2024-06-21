@@ -79,7 +79,7 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
             return false;
         }
         try {
-            List<Map<String, Object>> res = baseMapper.apiCheck(sql);
+            baseMapper.apiCheck(sql);
         } catch (Exception e) {
             System.out.println(sql);
             System.out.println(e.getMessage());
@@ -174,15 +174,16 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         LocalDate daysAgo = currentDate;
         List<LinkedHashMap<String, Object>> records = new ArrayList<>();
         LocalDateTime currentDateTime = LocalDateTime.now();
-        if (type.equals("最近一个月")) {
-            daysAgo = currentDate.minusDays(30);
-        } else if (type.equals("最近一个星期")) {
-            daysAgo = currentDate.minusDays(7);
-        } else if (type.equals("最近一天")) {
-            LocalDateTime exactTimeAgo = currentDateTime.minusDays(1); // 减去一天
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDateTime = exactTimeAgo.format(formatter);
-            records = baseMapper.getWithinRecordsByDay(formattedDateTime, currentDateTime,name);
+        switch (type) {
+            case "最近一个月" -> daysAgo = currentDate.minusDays(29);
+            case "最近一个星期" -> daysAgo = currentDate.minusDays(6);
+            case "最近一天" -> {
+                LocalDateTime exactTimeAgo = currentDateTime.minusDays(1); // 减去一天
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String formattedDateTime = exactTimeAgo.format(formatter);
+                records = baseMapper.getWithinRecordsByDay(formattedDateTime, currentDateTime, name);
+            }
         }
         if(!type.equals("最近一天")) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -190,22 +191,21 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
             records = baseMapper.getWithinRecordsByDay(formattedDate, currentDateTime,name);
         }
 
-        System.out.println(records);
         List<String> x = new ArrayList<>();
         List<Long> values;
 
         values = switch (type) {
             case "最近一个月" -> {
                 generateDaysAgo(x, 30);
-                yield countRecordsByDayAgo(records, currentDate.minusMonths(1), currentDate, x);
+                yield countRecordsByDayAgo(records, x);
             }
             case "最近一个星期" -> {
                 generateDaysAgo(x, 7);
-                yield countRecordsByDayAgo(records, currentDate.minusWeeks(1), currentDate, x);
+                yield countRecordsByDayAgo(records, x);
             }
             case "最近一天" -> {
-                generateHoursAgo(x, 24);
-                yield countRecordsByHourAgo(records, currentDateTime.minusDays(1), currentDateTime, x);
+                generateHoursAgo(x);
+                yield countRecordsByHourAgo(records, x);
 
             }
             default -> throw new IllegalArgumentException("Unsupported type: " + type);
@@ -276,10 +276,10 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
         DateTimeFormatter formatter_ = DateTimeFormatter.ofPattern("HH:00");
         List<String> values_ = switch (type) {
-            case "最近一个月" -> IntStream.rangeClosed(1, 30)
+            case "最近一个月" -> IntStream.rangeClosed(0, 29)
                     .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
                     .toList();
-            case "最近一个星期" -> IntStream.rangeClosed(1, 7)
+            case "最近一个星期" -> IntStream.rangeClosed(0, 7)
                     .mapToObj(daysAgo_ -> LocalDate.now().minusDays(daysAgo_).format(formatter))
                     .toList();
             case "最近一天" -> IntStream.rangeClosed(0, 23)
@@ -305,18 +305,18 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
 
     private void generateDaysAgo(List<String> x, int max) {
         for (int i = 0; i < max; i++) {
-            x.add(String.valueOf(i + 1));
+            x.add(String.valueOf(i));
         }
     }
 
-    private void generateHoursAgo(List<String> x, int max) {
-        for (int i = 0; i < max; i++) {
+    private void generateHoursAgo(List<String> x) {
+        for (int i = 0; i < 24; i++) {
             x.add(String.valueOf(i));
         }
     }
 
 
-    private List<Long> countRecordsByDayAgo(List<LinkedHashMap<String, Object>> records, LocalDate start, LocalDate end, List<String> x) {
+    private List<Long> countRecordsByDayAgo(List<LinkedHashMap<String, Object>> records, List<String> x) {
         Map<String, Long> dayCounts = records.stream()
                 .collect(Collectors.groupingBy(record -> {
                     String time = record.get("api_record_time").toString().split(" ")[0]; // 移除小数点和后续的所有字符
@@ -328,7 +328,7 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         return fillValues(x, dayCounts);
     }
 
-    private List<Long> countRecordsByHourAgo(List<LinkedHashMap<String, Object>> records, LocalDateTime start, LocalDateTime end, List<String> x) {
+    private List<Long> countRecordsByHourAgo(List<LinkedHashMap<String, Object>> records, List<String> x) {
         Map<String, Long> hourCounts = records.stream()
                 .collect(Collectors.groupingBy(record -> {
                     String time = record.get("api_record_time").toString().split("\\.")[0];
