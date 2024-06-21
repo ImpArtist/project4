@@ -562,7 +562,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
 
-            if(Objects.equals(className, "Long"))
+            if(Objects.equals(className, "Long")||Objects.equals(className, "Double"))
             // 准备各个统计值的列表
             {
                 List<String> xValues = new ArrayList<>();
@@ -683,9 +683,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     @Override
     public LinkedHashMap<String, Object> analysePieChart(Map<String, Object> inputData) {
         // 初始化结果Map
-        String groupField = (String) inputData.get("group");
-        String aggregateField = (String) inputData.get("aggregate");
+        String groupName = (String) inputData.get("group");
+        String aggregate = (String) inputData.get("aggregate");
         List<Map<String, Object>> dataList = (List<Map<String, Object>>) inputData.get("data");
+        if (aggregate.contains(".")) {
+            // 提取"."前面的内容作为table的值
+            aggregate = aggregate.substring(aggregate.indexOf(".") + 1);
+            groupName = groupName.substring(groupName.indexOf(".") + 1);
+        }
+
+        String aggregateField = aggregate;
+        String groupField = groupName;
 
         // 创建用于存储聚合数据的Map
         Map<Object, Integer> aggregateCountMap = new HashMap<>();
@@ -821,6 +829,44 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             result.put("方差", variance);
         }
 
+        if (className.equals("Double")) {
+            List<Double> values = data.stream()
+                    .map(e -> (Double) e.get(aggregate))
+                    .sorted()
+                    .toList();
+
+            double average = values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            Double maxValue = Collections.max(values);
+            Double minValue = Collections.min(values);
+
+            //long sum = values.stream().mapToLong(Long::longValue).sum();
+            int size = values.size();
+            double median = size % 2 == 0 ?
+                    (values.get(size / 2 - 1) + values.get(size / 2)) / 2.0 :
+                    values.get(size / 2);
+
+            Map<Long, Long> freqMap = values.stream()
+                    .collect(Collectors.groupingBy(Double::longValue, Collectors.counting()));
+
+            long mode = freqMap.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(0L);
+
+            double variance = values.stream()
+                    .mapToDouble(v -> Math.pow(v - average, 2))
+                    .average()
+                    .orElse(0.0);
+
+            result.put("平均值", average);
+            result.put("众数", mode);
+            result.put("众数出现次数", size);
+            result.put("中位数", median);
+            result.put("最大值", maxValue);
+            result.put("最小值", minValue);
+            result.put("方差", variance);
+        }
+
         return result;
     }
 
@@ -900,7 +946,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
 
-            if(Objects.equals(className, "Long"))
+            if(Objects.equals(className, "Long")||Objects.equals(className, "Double"))
             // 准备各个统计值的列表
             {
                 List<String> xValues = new ArrayList<>();
@@ -958,6 +1004,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
                 finalResult.put("series", result);
                 finalResult.put("xValues", xValues);
             }
+
             if (Objects.equals(className, "String")) {
                 // 准备各个统计值的列表
                 List<String> xValues = new ArrayList<>();

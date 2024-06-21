@@ -13,6 +13,7 @@
         <module>gateway</module>
         <module>dbManage</module>
         <module>api</module>
+        <module>dimensionAnalysis</module>
     </modules>
 
     <parent>
