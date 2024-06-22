@@ -725,7 +725,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
     }
 
     @Override
-    public LinkedHashMap<String, Object> analyseData(Map<String, Object> map) {
+    public String analyseData(Map<String, Object> map) {
         Object dataObj = map.get("data");
         String aggregate_ = Optional.ofNullable(map.get("aggregate")).orElse("").toString();
         String table = Optional.ofNullable(map.get("table")).orElse("").toString();
@@ -754,11 +754,11 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
             result.put("最多出现", maxKey);
             result.put("最多出现次数", maxCount);
-            result.put("最多出现占比", (double) maxCount / totalCount * 100);
+            result.put("最多出现占比", (double) maxCount / totalCount);
 
             result.put("最少出现", minKey);
             result.put("最少出现次数", minCount);
-            result.put("最少出现占比", (double) minCount / totalCount * 100);
+            result.put("最少出现占比", (double) minCount / totalCount);
         }
 
         if (className.equals("Date")) {
@@ -781,11 +781,11 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
             result.put("最多出现", maxKey);
             result.put("最多出现次数", maxCount);
-            result.put("最多出现占比", (double) maxCount / totalCount * 100);
+            result.put("最多出现占比", (double) maxCount / totalCount);
 
             result.put("最少出现", minKey);
             result.put("最少出现次数", minCount);
-            result.put("最少出现占比", (double) minCount / totalCount * 100);
+            result.put("最少出现占比", (double) minCount / totalCount);
 
             result.put("最大日期", maxDate);
             result.put("最小日期", minDate);
@@ -822,7 +822,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
             result.put("平均值", average);
             result.put("众数", mode);
-            result.put("众数出现次数", size);
+            result.put("出现次数", size);
             result.put("中位数", median);
             result.put("最大值", maxValue);
             result.put("最小值", minValue);
@@ -860,14 +860,17 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
 
             result.put("平均值", average);
             result.put("众数", mode);
-            result.put("众数出现次数", size);
+            result.put("出现次数", size);
             result.put("中位数", median);
             result.put("最大值", maxValue);
             result.put("最小值", minValue);
             result.put("方差", variance);
         }
 
-        return result;
+        return result.entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ":" + entry.getValue())
+                .collect(Collectors.joining(", "));
     }
 
     @Override

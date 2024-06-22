@@ -100,7 +100,7 @@ public class SearchController {
     }
 
     @PostMapping("/analysis/all")
-    public LinkedHashMap<String, Object> analyseData(@RequestBody Map<String, Object> map) {
+    public String analyseData(@RequestBody Map<String, Object> map) {
         return Service.analyseData(map);
     }
 
