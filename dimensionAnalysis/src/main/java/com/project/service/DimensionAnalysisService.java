@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface DimensionAnalysisService {
     List<LinkedHashMap<String, Object>> getList();
+
+    List<LinkedHashMap<String, Object>> getselectList();
 }

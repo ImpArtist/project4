@@ -22,4 +22,9 @@ public class dimensionAnalysisController
     public List<LinkedHashMap<String, Object>> getList(){
         return Service.getList();
     }
+
+    @PostMapping("/selectList")
+    public List<LinkedHashMap<String, Object>> getselectList(){
+        return Service.getselectList();
+    }
 }

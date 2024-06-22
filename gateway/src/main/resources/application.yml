@@ -28,6 +28,10 @@ spring:
           uri: lb://dimensionAnalysisService
           predicates:
             - Path=/stuAbility/**
+        - id: DbManage-service
+          uri: lb://DbService
+          predicates:
+            - Path=/DbManage/**
       #      default-filters:
       #        - AddRequestHeader=Truth,Itcast is freaking awesome!
       globalcors: # 全局的跨域处理

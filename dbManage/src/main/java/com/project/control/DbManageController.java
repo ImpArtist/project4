@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/dbManage")
+@RequestMapping("/DbManage")
 @RestController
 @RequiredArgsConstructor
 public class DbManageController {
@@ -20,5 +20,10 @@ public class DbManageController {
     @PostMapping("/create")
     public boolean createTable(Map<String, Object> map){
         return Service.createTable(map);
+    }
+
+    @PostMapping("/getTables")
+    public Object[] getTables(Map<String, Object> map){
+        return Service.getTables(map);
     }
 }
