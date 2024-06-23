@@ -4,6 +4,7 @@ package com.project.control;
 import com.project.service.DimensionAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,5 +27,10 @@ public class dimensionAnalysisController
     @PostMapping("/selectList")
     public List<LinkedHashMap<String, Object>> getselectList(){
         return Service.getselectList();
+    }
+
+    @PostMapping("/createChart")
+    public LinkedHashMap<String, Object> createChart(@RequestBody Map<String,Object> map){
+        return Service.createChart(map);
     }
 }
