@@ -4,6 +4,7 @@ package com.project.service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.mapper.DimensionAnalysis;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
 
@@ -67,12 +68,15 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
 
     @Override
     public LinkedHashMap<String, Object> createChart(Map<String,Object> map) {
+        List<String>  legend = new ArrayList<>();
         LinkedHashMap<String, Object> series = new LinkedHashMap<>();
         List<LinkedHashMap<String, Object>> indicator = new ArrayList<>();
         List<LinkedHashMap<String, Object>> data = new ArrayList<>();
         LinkedHashMap<String, Object> res = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> areaStyle = new LinkedHashMap<>();
         series.put("name","雷达图");
         series.put("type","radar");
+        series.put("areaStyle",areaStyle);
         String attributes = Optional.ofNullable(map.get("attributes")).orElse("").toString();
         String dimension = Optional.ofNullable(map.get("dimension")).orElse("").toString();
         String stuNumber = Optional.ofNullable(map.get("stuNumber")).orElse("").toString();
@@ -101,6 +105,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
                 else{
                     tmp.put("name",val);
@@ -108,6 +113,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
             }
             if(level.equals("stu_info_grade")){
@@ -118,6 +124,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
                 else{
                     tmp.put("name",parts[0] + parts[1]);
@@ -125,6 +132,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
             }
             if(level.equals("stu_class_name")){
@@ -135,6 +143,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
                 else{
                     tmp.put("name",parts[0] + parts[1] + parts[2]);
@@ -142,12 +151,12 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
+                    legend.add(tmp.get("name").toString());
                 }
             }
             data.add(tmp);
         }
         LinkedHashMap<String, Object> tmp_ = new LinkedHashMap<>();
-        System.out.println(stuNumber);
         List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getStuChart(result,stuNumber);
         Collection<Object> valuesCollection = tmp1.get(0).values();
         Object[] valuesArray = valuesCollection.toArray();
@@ -156,6 +165,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         data.add(tmp_);
         series.put("data",data);
         res.put("series",series);
+        legend.add(tmp_.get("name").toString());
         for (String str : part) {
             LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
             String trans = baseMapper.getTrans(str.trim()).get(0).get("translation").toString();
@@ -164,17 +174,31 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 tmp.put("max",5.0);
             }
             else{
-                Double max = (Double) baseMapper.getMax(str.trim()).get(0).get("max");
+                Float max = (Float) baseMapper.getMax(str.trim()).get(0).get("max");
                 tmp.put("max",max);
             }
             indicator.add(tmp);
         }
         res.put("indicator",indicator);
+        res.put("legend",legend);
         return res;
     }
 
     @Override
     public List<LinkedHashMap<String, Object>> getStuNumList() {
-        return null;
+        return baseMapper.getStuNumList();
+    }
+
+    @Override
+    public String getInfo(@RequestBody Map<String,Object> map) {
+        String num = Optional.ofNullable(map.get("stu_number")).orElse("").toString();
+        Collection<Object> res = baseMapper.getInfo(num).get(0).values();
+        String str ="";
+        for (Object o : res) {
+            str = str.concat(o.toString());
+            str = str.concat(" ");
+        }
+
+        return str;
     }
 }

@@ -38,4 +38,10 @@ public interface DimensionAnalysis extends BaseMapper<Object> {
 
     @Select("SELECT ${attributes} FROM project.stu_info where stu_number = #{stuNumber}")
     List<LinkedHashMap<String, Object>> getStuChart(@Param("attributes") String attributes, @Param("stuNumber") String stuNumber);
+
+    @Select("SELECT stu_number FROM project.stu_info")
+    List<LinkedHashMap<String, Object>> getStuNumList();
+
+    @Select("SELECT stu_name,stu_edu_level,stu_info_grade,stu_class_name FROM project.stu_info where stu_number = #{num}")
+    List<LinkedHashMap<String, Object>> getInfo(String num);
 }

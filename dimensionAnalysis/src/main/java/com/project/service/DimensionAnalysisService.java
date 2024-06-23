@@ -1,6 +1,7 @@
 package com.project.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,4 +16,6 @@ public interface DimensionAnalysisService {
     LinkedHashMap<String, Object> createChart(Map<String,Object> map);
 
     List<LinkedHashMap<String, Object>> getStuNumList();
+
+    String getInfo(@RequestBody Map<String,Object> map);
 }

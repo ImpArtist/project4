@@ -39,4 +39,9 @@ public class dimensionAnalysisController
         return Service.getStuNumList();
     }
 
+    @PostMapping("/getInfo")
+    public String getInfo(@RequestBody Map<String,Object> map){
+        return Service.getInfo(map);
+    }
+
 }
