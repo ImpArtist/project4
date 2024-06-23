@@ -172,4 +172,9 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         res.put("indicator",indicator);
         return res;
     }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> getStuNumList() {
+        return null;
+    }
 }

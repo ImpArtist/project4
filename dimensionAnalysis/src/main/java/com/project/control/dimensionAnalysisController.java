@@ -33,4 +33,10 @@ public class dimensionAnalysisController
     public LinkedHashMap<String, Object> createChart(@RequestBody Map<String,Object> map){
         return Service.createChart(map);
     }
+
+    @PostMapping("/getStuNumList")
+    public List<LinkedHashMap<String, Object>> getStuNumList(){
+        return Service.getStuNumList();
+    }
+
 }

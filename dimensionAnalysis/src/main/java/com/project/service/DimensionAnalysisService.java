@@ -13,4 +13,6 @@ public interface DimensionAnalysisService {
     List<LinkedHashMap<String, Object>> getselectList();
 
     LinkedHashMap<String, Object> createChart(Map<String,Object> map);
+
+    List<LinkedHashMap<String, Object>> getStuNumList();
 }
