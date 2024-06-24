@@ -30,7 +30,7 @@ public interface DimensionAnalysis extends BaseMapper<Object> {
     @Select("SELECT ${attributes} FROM project.stu_info where stu_edu_level LIKE CONCAT('%',#{value1},'%') and stu_info_grade LIKE CONCAT('%',#{value2},'%') and stu_class_name LIKE CONCAT('%',#{value3},'%')")
     List<LinkedHashMap<String, Object>> getClassChart(@Param("attributes") String attributes, @Param("value1") String value1, @Param("value2") String value2, @Param("value3") String value3);
 
-    @Select("SELECT translation FROM project.stu_info_attribute where attribute = #{trim}")
+    @Select("SELECT attribute,translation FROM project.stu_info_attribute where attribute = #{trim}")
     List<LinkedHashMap<String, Object>> getTrans(@Param("trim") String trim);
 
     @Select("SELECT MAX(${trim}) AS max FROM project.stu_info")

@@ -74,6 +74,7 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         List<LinkedHashMap<String, Object>> data = new ArrayList<>();
         LinkedHashMap<String, Object> res = new LinkedHashMap<>();
         LinkedHashMap<String, Object> areaStyle = new LinkedHashMap<>();
+        List<LinkedHashMap<String, Object>> table = new ArrayList<>();
         series.put("name","雷达图");
         series.put("type","radar");
         series.put("areaStyle",areaStyle);
@@ -86,22 +87,40 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
 
         StringBuilder resultBuilder = new StringBuilder();
 
+
         // 遍历每个单词
         for (String part_ : part) {
             String wrapped = "AVG(" + part_.trim() + ")";
             resultBuilder.append(wrapped).append(",");
         }
         String result = resultBuilder.substring(0, resultBuilder.length() - 1);
+        LinkedHashMap<String, Object> tmp_ = new LinkedHashMap<>();
+        List<LinkedHashMap<String, Object>>  tmp2 = baseMapper.getStuChart(result,stuNumber);
+        LinkedHashMap<String, Object> tab_ = new LinkedHashMap<>();
+        tab_.put("name","学生");
+        tab_.putAll(tmp2.get(0));
+        table.add(tab_);
+        Collection<Object> valuesCollection_ = tmp2.get(0).values();
+        Object[] valuesArray_ = valuesCollection_.toArray();
+        tmp_.put("name","学生");
+        tmp_.put("value",valuesArray_);
+        data.add(tmp_);
+        legend.add(tmp_.get("name").toString());
         String[] dimensionArray = dimension.split(",");
         for (String str : dimensionArray) {
             String level = str.contains(".") ? str.substring(0, str.indexOf(".")) : str;
             level = level.replaceAll(" ","");
             String val = str.contains(".") ? str.substring(str.indexOf(".") + 1) : str;
             LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
+
             if(level.equals("stu_edu_level")){
                 if(val.contains("all")){
                     tmp.put("name","全部培养层次");
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getEduChart(result,"生");
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name","全部培养层次");
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -110,6 +129,10 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 else{
                     tmp.put("name",val);
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getEduChart(result,val);
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name",val);
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -121,6 +144,10 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 if(val.contains("all")){
                     tmp.put("name",parts[0] + "全部年级");
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getGradeChart(result,parts[0],"级");
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name",parts[0] + "全部年级");
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -129,6 +156,10 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 else{
                     tmp.put("name",parts[0] + parts[1]);
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getGradeChart(result,parts[0],parts[1]);
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name",parts[0] + parts[1]);
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -140,6 +171,10 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 if(val.contains("all")){
                     tmp.put("name",parts[0] + parts[1] + "全部班级");
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getClassChart(result,parts[0],parts[1],"班");
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name",parts[0] + parts[1] + "全部班级");
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -148,6 +183,10 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 else{
                     tmp.put("name",parts[0] + parts[1] + parts[2]);
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getClassChart(result,parts[0],parts[1],parts[2]);
+                    LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
+                    tab.put("name",parts[0] + parts[1] + parts[2]);
+                    tab.putAll(tmp1.get(0));
+                    table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
                     tmp.put("value",valuesArray);
@@ -156,20 +195,22 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
             }
             data.add(tmp);
         }
-        LinkedHashMap<String, Object> tmp_ = new LinkedHashMap<>();
-        List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getStuChart(result,stuNumber);
-        Collection<Object> valuesCollection = tmp1.get(0).values();
-        Object[] valuesArray = valuesCollection.toArray();
-        tmp_.put("name","学生");
-        tmp_.put("value",valuesArray);
-        data.add(tmp_);
+
         series.put("data",data);
         res.put("series",series);
-        legend.add(tmp_.get("name").toString());
+        List<LinkedHashMap<String, Object>>  mapping = new ArrayList<>();
+        LinkedHashMap<String, Object> first = new LinkedHashMap<>();
+        first.put("attribute","name");
+        first.put("translation","单位");
+        mapping.add(first);
         for (String str : part) {
             LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
+            LinkedHashMap<String, Object> tmp3 = new LinkedHashMap<>();
             String trans = baseMapper.getTrans(str.trim()).get(0).get("translation").toString();
+            String attribute = baseMapper.getTrans(str.trim()).get(0).get("attribute").toString();
             tmp.put("name",trans);
+            tmp3.put("attribute","AVG("+attribute+")");
+            tmp3.put("translation",trans);
             if(trans.contains("绩点")){
                 tmp.put("max",5.0);
             }
@@ -178,9 +219,12 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                 tmp.put("max",max);
             }
             indicator.add(tmp);
+            mapping.add(tmp3);
         }
         res.put("indicator",indicator);
         res.put("legend",legend);
+        res.put("mapping",mapping);
+        res.put("table",table);
         return res;
     }
 
