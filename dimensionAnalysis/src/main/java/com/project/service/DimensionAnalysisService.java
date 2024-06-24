@@ -18,4 +18,8 @@ public interface DimensionAnalysisService {
     List<LinkedHashMap<String, Object>> getStuNumList();
 
     String getInfo(@RequestBody Map<String,Object> map);
+
+    LinkedHashMap<String, Object> createChart2(Map<String, Object> map);
+
+    List<LinkedHashMap<String, Object>> getChartList();
 }

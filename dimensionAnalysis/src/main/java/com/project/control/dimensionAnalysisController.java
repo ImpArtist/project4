@@ -44,4 +44,13 @@ public class dimensionAnalysisController
         return Service.getInfo(map);
     }
 
+    @PostMapping("/createChart2")
+    public LinkedHashMap<String, Object> createChart2(@RequestBody Map<String,Object> map){
+        return Service.createChart2(map);
+    }
+
+    @PostMapping("/getChartList")
+    public List<LinkedHashMap<String, Object>> getChartList() {
+        return Service.getChartList();
+    }
 }

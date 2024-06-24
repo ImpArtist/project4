@@ -6,6 +6,8 @@ import com.project.mapper.DimensionAnalysis;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -244,5 +246,66 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         }
 
         return str;
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> createChart2(Map<String, Object> map) {
+        LinkedHashMap<String, Object> res = new LinkedHashMap<>();
+        String stuNumber = Optional.ofNullable(map.get("stuNumber")).orElse("").toString();
+        String dimension = Optional.ofNullable(map.get("dimension")).orElse("").toString();
+        List<LinkedHashMap<String, Object>> stu = baseMapper.getStuChart2(stuNumber,dimension);
+        List<Integer> years = new ArrayList<>();
+        List<Float> stuValues = new ArrayList<>();
+        for(LinkedHashMap<String, Object> map1 : stu){
+            years.add((Integer) map1.get("stu_ability_year"));
+            stuValues.add((Float) map1.get(dimension));
+        }
+
+        // 找到最小值和最大值
+        int minYear = Collections.min(years);
+        int maxYear = Collections.max(years);
+        List<LinkedHashMap<String, Object>> undergraduate = baseMapper.getUndergraduateChart2(dimension,minYear,maxYear);
+        List<LinkedHashMap<String, Object>> graduate = baseMapper.getGraduateChart2(dimension,minYear,maxYear);
+        double[] undergraduateArray = new double[undergraduate.size()];
+        double[] graduateArray = new double[graduate.size()];
+        for (int i = 0; i < undergraduate.size(); i++) {
+            LinkedHashMap<String, Object> map2 = undergraduate.get(i);
+            LinkedHashMap<String, Object> map3 = graduate.get(i);
+            double value1 = ((Number) map2.get("AVG(stu_ability_optional_gpa)")).doubleValue();
+            double value2 = ((Number) map3.get("AVG(stu_ability_optional_gpa)")).doubleValue();
+            BigDecimal bd1 = new BigDecimal(value1).setScale(3, RoundingMode.HALF_UP);
+            BigDecimal bd2 = new BigDecimal(value2).setScale(3, RoundingMode.HALF_UP);
+            undergraduateArray[i] = bd1.doubleValue();
+            graduateArray[i] = bd2.doubleValue();
+        }
+        List<LinkedHashMap<String,Object>> series = new ArrayList<>();
+        LinkedHashMap<String,Object> undergraduateSeries = new LinkedHashMap<>();
+        undergraduateSeries.put("name","本科生");
+        undergraduateSeries.put("type","bar");
+        undergraduateSeries.put("data",undergraduateArray);
+        LinkedHashMap<String,Object> graduateSeries = new LinkedHashMap<>();
+        graduateSeries.put("name","研究生");
+        graduateSeries.put("type","bar");
+        graduateSeries.put("data",graduateArray);
+        LinkedHashMap<String,Object> stuSeries = new LinkedHashMap<>();
+        LinkedHashMap<String,Object> lineStyle = new LinkedHashMap<>();
+        stuSeries.put("name","学生");
+        stuSeries.put("type","line");
+        stuSeries.put("data",stuValues);
+        stuSeries.put("symbolSize",10);
+        lineStyle.put("width",4);
+        lineStyle.put("color","red");
+        stuSeries.put("lineStyle",lineStyle);
+        series.add(undergraduateSeries);
+        series.add(graduateSeries);
+        series.add(stuSeries);
+        res.put("xValues",years);
+        res.put("series",series);
+        return res;
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> getChartList() {
+        return baseMapper.getChartList();
     }
 }

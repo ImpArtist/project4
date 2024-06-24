@@ -44,4 +44,17 @@ public interface DimensionAnalysis extends BaseMapper<Object> {
 
     @Select("SELECT stu_name,stu_edu_level,stu_info_grade,stu_class_name FROM project.stu_info where stu_number = #{num}")
     List<LinkedHashMap<String, Object>> getInfo(String num);
+
+    @Select("SELECT ${dimension},stu_ability_year from project.stu_ability where stu_ability_number = #{stuNumber}")
+    List<LinkedHashMap<String, Object>> getStuChart2(@Param("stuNumber") String stuNumber,@Param("dimension")String dimension);
+
+
+    @Select("SELECT AVG(${dimension}) from project.stu_ability where stu_ability_edu_level = '本科生' and stu_ability_year between #{minYear} and #{maxYear} group by stu_ability_year order by stu_ability_year")
+    List<LinkedHashMap<String, Object>> getUndergraduateChart2(String dimension, int minYear, int maxYear);
+
+    @Select("SELECT AVG(${dimension}) from project.stu_ability where stu_ability_edu_level != '本科生' and stu_ability_year between #{minYear} and #{maxYear} group by stu_ability_year order by stu_ability_year")
+    List<LinkedHashMap<String, Object>> getGraduateChart2(String dimension, int minYear, int maxYear);
+
+    @Select("SELECT attribute from project.stu_ability_attribute where privilege between 5 and 18 order by privilege")
+    List<LinkedHashMap<String, Object>> getChartList();
 }
