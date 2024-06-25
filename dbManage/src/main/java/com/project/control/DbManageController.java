@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.project.service.IService.DbManageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,5 +26,15 @@ public class DbManageController {
     @PostMapping("/getTables")
     public Object[] getTables(Map<String, Object> map){
         return Service.getTables(map);
+    }
+
+    @PostMapping("/getTableData")
+    LinkedHashMap<String,Object> getTableData(@RequestBody Map<String, Object> map){
+        return Service.getTableData(map);
+    }
+
+    @PostMapping("/getTableStruct")
+    LinkedHashMap<String,Object> getTableStruct(@RequestBody Map<String, Object> map){
+        return Service.getTableStruct(map);
     }
 }

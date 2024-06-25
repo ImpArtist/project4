@@ -13,4 +13,13 @@ public interface DbManageMapper extends BaseMapper<Object> {
 
     @Select("show tables")
     List<LinkedHashMap<String, Object>> getTables();
+
+    @Select("select * from ${tableName}")
+    List<LinkedHashMap<String, Object>> getTableData(String tableName);
+
+    @Select("SELECT COLUMN_NAME AS attribute FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'project' AND TABLE_NAME = '${tableName}'")
+    List<LinkedHashMap<String, Object>> getTableMapping(String tableName);
+
+    @Select("SHOW COLUMNS FROM ${tableName}")
+    List<LinkedHashMap<String, Object>> getTableStruct(String tableName);
 }
