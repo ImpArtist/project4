@@ -68,6 +68,46 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         return res;
     }
 
+    public static Double[] convertToDoubleArray(Object[] valuesArray) {
+        if (valuesArray == null) {
+            return null;
+        }
+
+        Double[] doubleArray = new Double[valuesArray.length];
+
+        for (int i = 0; i < valuesArray.length; i++) {
+            if (valuesArray[i] instanceof Number) {
+                BigDecimal bd = BigDecimal.valueOf(((Number) valuesArray[i]).doubleValue());
+                bd = bd.setScale(3, RoundingMode.HALF_UP); // 保留两位小数
+                doubleArray[i] = bd.doubleValue();
+            } else {
+                // 如果不是数字类型，可以根据需求决定如何处理
+                doubleArray[i] = null; // 或者抛出异常，或者设置为特定的默认值
+            }
+        }
+
+        return doubleArray;
+    }
+    public static LinkedHashMap<String, Double> convertToDoubleMap(LinkedHashMap<String, Object> tmp1) {
+        if (tmp1 == null) {
+            return null;
+        }
+
+        LinkedHashMap<String, Double> doubleMap = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Object> entry : tmp1.entrySet()) {
+            if (entry.getValue() instanceof Number) {
+                BigDecimal bd = BigDecimal.valueOf(((Number) entry.getValue()).doubleValue());
+                bd = bd.setScale(3, RoundingMode.HALF_UP); // 保留三位小数
+                doubleMap.put(entry.getKey(), bd.doubleValue());
+            } else {
+                // 如果值不是数字类型，可以根据需求处理（这里将其设为 null）
+                doubleMap.put(entry.getKey(), null); // 或者选择其他默认值
+            }
+        }
+
+        return doubleMap;
+    }
     @Override
     public LinkedHashMap<String, Object> createChart(Map<String,Object> map) {
         List<String>  legend = new ArrayList<>();
@@ -100,12 +140,12 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         List<LinkedHashMap<String, Object>>  tmp2 = baseMapper.getStuChart(result,stuNumber);
         LinkedHashMap<String, Object> tab_ = new LinkedHashMap<>();
         tab_.put("name","学生");
-        tab_.putAll(tmp2.get(0));
+        tab_.putAll(convertToDoubleMap(tmp2.get(0)));
         table.add(tab_);
         Collection<Object> valuesCollection_ = tmp2.get(0).values();
         Object[] valuesArray_ = valuesCollection_.toArray();
         tmp_.put("name","学生");
-        tmp_.put("value",valuesArray_);
+        tmp_.put("value",convertToDoubleArray(valuesArray_));
         data.add(tmp_);
         legend.add(tmp_.get("name").toString());
         String[] dimensionArray = dimension.split(",");
@@ -121,11 +161,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getEduChart(result,"生");
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name","全部培养层次");
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
                 else{
@@ -133,11 +173,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getEduChart(result,val);
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name",val);
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
             }
@@ -148,11 +188,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getGradeChart(result,parts[0],"级");
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name",parts[0] + "全部年级");
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
                 else{
@@ -160,11 +200,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getGradeChart(result,parts[0],parts[1]);
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name",parts[0] + parts[1]);
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
             }
@@ -175,11 +215,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getClassChart(result,parts[0],parts[1],"班");
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name",parts[0] + parts[1] + "全部班级");
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
                     Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
                 else{
@@ -187,11 +227,11 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
                     List<LinkedHashMap<String, Object>>  tmp1 = baseMapper.getClassChart(result,parts[0],parts[1],parts[2]);
                     LinkedHashMap<String, Object> tab = new LinkedHashMap<>();
                     tab.put("name",parts[0] + parts[1] + parts[2]);
-                    tab.putAll(tmp1.get(0));
+                    tab.putAll(convertToDoubleMap(tmp1.get(0)));
                     table.add(tab);
                     Collection<Object> valuesCollection = tmp1.get(0).values();
-                    Object[] valuesArray = valuesCollection.toArray();
-                    tmp.put("value",valuesArray);
+                    Object[] valuesArray =  valuesCollection.toArray();
+                    tmp.put("value",convertToDoubleArray(valuesArray));
                     legend.add(tmp.get("name").toString());
                 }
             }
@@ -271,8 +311,8 @@ public class DimensionAnalysisServiceImpl extends ServiceImpl<DimensionAnalysis,
         for (int i = 0; i < undergraduate.size(); i++) {
             LinkedHashMap<String, Object> map2 = undergraduate.get(i);
             LinkedHashMap<String, Object> map3 = graduate.get(i);
-            double value1 = ((Number) map2.get("AVG(stu_ability_optional_gpa)")).doubleValue();
-            double value2 = ((Number) map3.get("AVG(stu_ability_optional_gpa)")).doubleValue();
+            double value1 = ((Number) map2.get("AVG("+dimension+")")).doubleValue();
+            double value2 = ((Number) map3.get("AVG("+dimension+")")).doubleValue();
             BigDecimal bd1 = new BigDecimal(value1).setScale(3, RoundingMode.HALF_UP);
             BigDecimal bd2 = new BigDecimal(value2).setScale(3, RoundingMode.HALF_UP);
             undergraduateArray[i] = bd1.doubleValue();
