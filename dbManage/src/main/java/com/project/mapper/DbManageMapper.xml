@@ -3,5 +3,11 @@
 
 <mapper namespace="com.project.mapper.DbManageMapper">
 
+    <select id="getTableData" resultType="java.util.LinkedHashMap">
+        SELECT * FROM ${tableName}
+            <if test="attribute != null and attribute != ''">
+                WHERE ${attribute} LIKE CONCAT('%', #{value}, '%')
+            </if>
+    </select>
 
 </mapper>

@@ -46,8 +46,19 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
         List<LinkedHashMap<String, Object>> mapping;
         List<LinkedHashMap<String, Object>> data;
         String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
-        data = baseMapper.getTableData(tableName);
-        mapping = baseMapper.getTableMapping(tableName);
+        String attribute = Optional.ofNullable(map.get("attribute")).orElse("").toString();
+        String value = Optional.ofNullable(map.get("value")).orElse("").toString();
+        data = baseMapper.getTableData(tableName, attribute, value);
+        mapping = baseMapper.getTableStruct(tableName);
+        for(LinkedHashMap<String, Object> map_:mapping){
+            map_.remove("Type");
+            map_.remove("Null");
+            map_.remove("Key");
+            map_.remove("Default");
+            map_.remove("Extra");
+            map_.put("attribute",map_.get("Field"));
+            map_.remove("Field");
+        }
         for (LinkedHashMap<String, Object> map1 : mapping) {
             map1.put("translation",map1.get("attribute"));
         }
