@@ -13,10 +13,14 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
     public boolean createTable(Map<String, Object> map){
         String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
         String translation = Optional.ofNullable(map.get("tableNameTranslation")).orElse("").toString();
+        String attributeDate = tableName + "_id";
         try {
-            baseMapper.createTable(tableName,translation);
+            baseMapper.createTable(tableName);
+            baseMapper.createTableMapping(tableName,translation);
+            baseMapper.initTable(tableName,translation,attributeDate);
             return true;
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -32,7 +36,7 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
         for(String s:valuesList){
             LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
             tmp.put("tableName",s);
-            tmp.put("dataBase","数据库类型:Mysql");
+            tmp.put("dataBase","Mysql");
             tmp.put("createTime",baseMapper.getTableCreateTime(s).get(0).get("CREATE_TIME").toString());
             res.add(tmp);
         }
@@ -111,5 +115,17 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
             res_.add(map_.get("Field").toString());
         }
         return res_;
+    }
+
+    @Override
+    public boolean deleteTable(Map<String, Object> map) {
+        String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+        try{
+            baseMapper.deleteTable(tableName);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 }

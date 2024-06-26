@@ -18,8 +18,8 @@ import java.util.Map;
 public class DbManageController {
 
     private final DbManageService Service;
-    @PostMapping("/create")
-    public boolean createTable(Map<String, Object> map){
+    @PostMapping("/createTable")
+    public boolean createTable(@RequestBody Map<String, Object> map){
         return Service.createTable(map);
     }
 
@@ -41,6 +41,11 @@ public class DbManageController {
     @PostMapping("/getFieldList")
     List<String> getFieldList(@RequestBody Map<String, Object> map){
         return Service.getFieldList(map);
+    }
+
+    @PostMapping("/deleteTable")
+    boolean deleteTable(@RequestBody Map<String, Object> map){
+        return Service.deleteTable(map);
     }
 
 }
