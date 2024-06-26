@@ -32,6 +32,10 @@ spring:
           uri: lb://DbService
           predicates:
             - Path=/DbManage/**
+        - id: chart-service
+          uri: lb://chartService
+          predicates:
+            - Path=/chart/**
       #      default-filters:
       #        - AddRequestHeader=Truth,Itcast is freaking awesome!
       globalcors: # 全局的跨域处理

@@ -293,6 +293,8 @@ public class ApiServiceImpl extends ServiceImpl<ApiMapper, Object> implements Ap
         barMap.put("name", "访问数");
         barMap.put("data", values);
         barMap.put("type", "line");
+        barMap.put("universalTransition",true);
+        barMap.put("animationDurationUpdate",1000);
         bar.add(barMap);
 
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();

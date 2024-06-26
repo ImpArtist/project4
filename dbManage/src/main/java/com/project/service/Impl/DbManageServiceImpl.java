@@ -22,14 +22,22 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
     }
 
     @Override
-    public Object[] getTables(Map<String, Object> map_) {
+    public List<LinkedHashMap<String, Object>> getTables(Map<String, Object> map_) {
         List<LinkedHashMap<String, Object>> names = baseMapper.getTables();
         List<String> valuesList = new ArrayList<>();
+        List<LinkedHashMap<String, Object>> res = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : names) {
             valuesList.add(map.get("Tables_in_project").toString());
         }
+        for(String s:valuesList){
+            LinkedHashMap<String, Object> tmp = new LinkedHashMap<>();
+            tmp.put("tableName",s);
+            tmp.put("dataBase","数据库类型:Mysql");
+            tmp.put("createTime",baseMapper.getTableCreateTime(s).get(0).get("CREATE_TIME").toString());
+            res.add(tmp);
+        }
 
-        return valuesList.toArray();
+        return res;
     }
 
     @Override

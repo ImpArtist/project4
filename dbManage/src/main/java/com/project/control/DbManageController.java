@@ -24,7 +24,7 @@ public class DbManageController {
     }
 
     @PostMapping("/getTables")
-    public Object[] getTables(Map<String, Object> map){
+    public List<LinkedHashMap<String,Object>> getTables(Map<String, Object> map){
         return Service.getTables(map);
     }
 
@@ -37,4 +37,5 @@ public class DbManageController {
     LinkedHashMap<String,Object> getTableStruct(@RequestBody Map<String, Object> map){
         return Service.getTableStruct(map);
     }
+
 }

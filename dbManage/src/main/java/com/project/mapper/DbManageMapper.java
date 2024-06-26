@@ -22,4 +22,8 @@ public interface DbManageMapper extends BaseMapper<Object> {
 
     @Select("SHOW COLUMNS FROM ${tableName}")
     List<LinkedHashMap<String, Object>> getTableStruct(String tableName);
+
+
+    @Select("SELECT create_time FROM information_schema.tables WHERE table_schema = 'project' AND table_name = #{tableName}")
+    List<LinkedHashMap<String, Object>> getTableCreateTime(@Param("tableName")String tableName);
 }
