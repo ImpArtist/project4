@@ -38,4 +38,9 @@ public class DbManageController {
         return Service.getTableStruct(map);
     }
 
+    @PostMapping("/getFieldList")
+    List<String> getFieldList(@RequestBody Map<String, Object> map){
+        return Service.getFieldList(map);
+    }
+
 }

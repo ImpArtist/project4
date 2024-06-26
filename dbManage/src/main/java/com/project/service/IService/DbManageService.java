@@ -12,4 +12,6 @@ public interface DbManageService {
     LinkedHashMap<String, Object> getTableData(Map<String, Object> map);
 
     LinkedHashMap<String, Object> getTableStruct(Map<String, Object> map);
+
+    List<String> getFieldList(Map<String, Object> map);
 }

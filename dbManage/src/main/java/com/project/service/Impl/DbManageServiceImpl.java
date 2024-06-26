@@ -102,4 +102,14 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
         res.put("mapping",mapping);
         return res;
     }
+
+    @Override
+    public List<String> getFieldList(Map<String, Object> map) {
+        List<LinkedHashMap<String, Object>> res = baseMapper.getTableStruct(Optional.ofNullable(map.get("tableName")).orElse("").toString());
+        List<String> res_ = new ArrayList<>();
+        for(LinkedHashMap<String, Object> map_:res){
+            res_.add(map_.get("Field").toString());
+        }
+        return res_;
+    }
 }
