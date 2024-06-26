@@ -48,4 +48,10 @@ public class DbManageController {
         return Service.deleteTable(map);
     }
 
+
+    @PostMapping("/deleteRecord")
+    boolean deleteRecord(@RequestBody Map<String, Object> map){
+        return Service.deleteRecord(map);
+    }
+
 }

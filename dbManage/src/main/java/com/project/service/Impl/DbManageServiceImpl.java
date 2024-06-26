@@ -18,6 +18,7 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
             baseMapper.createTable(tableName);
             baseMapper.createTableMapping(tableName,translation);
             baseMapper.initTable(tableName,translation,attributeDate);
+            baseMapper.initTable2(tableName,translation);
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -128,4 +129,21 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
             return false;
         }
     }
+
+
+    @Override
+    public boolean deleteRecord(Map<String, Object> map) {
+        String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+        String attribute = Optional.ofNullable(map.get("attribute")).orElse("").toString();
+        String value = Optional.ofNullable(map.get("value")).orElse("").toString();
+        try{
+            baseMapper.deleteRecord(tableName,attribute,value);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+
 }

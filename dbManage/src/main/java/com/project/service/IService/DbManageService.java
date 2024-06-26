@@ -16,4 +16,6 @@ public interface DbManageService {
     List<String> getFieldList(Map<String, Object> map);
 
     boolean deleteTable(Map<String, Object> map);
+
+    boolean deleteRecord(Map<String, Object> map);
 }

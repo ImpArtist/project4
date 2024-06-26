@@ -562,7 +562,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
 
-            if(Objects.equals(className, "Long")||Objects.equals(className, "Double"))
+            if(Objects.equals(className, "INT")||Objects.equals(className, "Double"))
             // 准备各个统计值的列表
             {
                 List<String> xValues = new ArrayList<>();
@@ -791,7 +791,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             result.put("最小日期", minDate);
         }
 
-        if (className.equals("Long")) {
+        if (className.equals("INT")) {
             List<Integer> values = data.stream()
                     .map(e -> (Integer) e.get(aggregate))
                     .sorted()
@@ -949,7 +949,7 @@ public class Infoimpl extends ServiceImpl<InfoMapper, Object> implements IServic
             List<String> sortedKeys = new ArrayList<>(grouped.keySet());
             Collections.sort(sortedKeys);
 
-            if(Objects.equals(className, "Long")||Objects.equals(className, "Double"))
+            if(Objects.equals(className, "INT")||Objects.equals(className, "Double"))
             // 准备各个统计值的列表
             {
                 List<String> xValues = new ArrayList<>();

@@ -1,6 +1,7 @@
 package com.project.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -36,4 +37,10 @@ public interface DbManageMapper extends BaseMapper<Object> {
 
     @Insert("INSERT INTO ${tableName}_attribute VALUES (#{attributeId}, #{translation}, 'INT', 1)")
     void initTable(String tableName,String translation,String attributeId);
+
+    @Insert("INSERT INTO table_info VALUES (#{tableName}, #{translation})")
+    void initTable2(String tableName, String translation);
+
+    @Delete("DELETE FROM ${tableName} WHERE ${attribute} = #{value}")
+    void deleteRecord(String tableName, String attribute, String value);
 }
