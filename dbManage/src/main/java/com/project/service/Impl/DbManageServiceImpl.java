@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.mapper.DbManageMapper;
 import com.project.service.IService.DbManageService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -143,6 +144,23 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
             System.out.println(e.getMessage());
             return false;
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean updateStructTable(Map<String, Object> map) {
+        String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+        try{
+            List<LinkedHashMap<String,Object>> tmp = new ArrayList<>();
+            List<LinkedHashMap<String,Object>> data = (List<LinkedHashMap<String, Object>>) Optional.ofNullable(map.get("data")).orElse(tmp);
+            baseMapper.truncate(tableName);
+            baseMapper.updateStructTable(data,tableName);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+
     }
 
 

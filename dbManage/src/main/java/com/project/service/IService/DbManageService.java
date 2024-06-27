@@ -18,4 +18,6 @@ public interface DbManageService {
     boolean deleteTable(Map<String, Object> map);
 
     boolean deleteRecord(Map<String, Object> map);
+
+    boolean updateStructTable(Map<String, Object> map);
 }

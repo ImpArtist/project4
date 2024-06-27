@@ -54,4 +54,9 @@ public class DbManageController {
         return Service.deleteRecord(map);
     }
 
+    @PostMapping("/updateStructTable")
+    boolean updateStructTable(@RequestBody Map<String, Object> map){
+        return Service.updateStructTable(map);
+    }
+
 }

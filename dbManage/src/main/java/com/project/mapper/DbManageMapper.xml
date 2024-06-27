@@ -10,4 +10,13 @@
             </if>
     </select>
 
+    <insert id="updateStructTable">
+        INSERT INTO ${tableName} VALUES
+        <foreach collection="data" item="item" separator="union all">
+            (
+                #{item.Field},#{item.Type},#{item.Null},#{item.Key},#{item.Default},#{item.Extra}
+            )
+        </foreach>
+    </insert>
+
 </mapper>

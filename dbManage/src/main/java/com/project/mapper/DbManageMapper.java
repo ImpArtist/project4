@@ -43,4 +43,9 @@ public interface DbManageMapper extends BaseMapper<Object> {
 
     @Delete("DELETE FROM ${tableName} WHERE ${attribute} = #{value}")
     void deleteRecord(String tableName, String attribute, String value);
+
+    void updateStructTable(@Param("data")List<LinkedHashMap<String,Object>> data,@Param("tableName") String tableName);
+
+    @Select("TRUNCATE TABLE ${tableName}")
+    void truncate(String tableName);
 }
