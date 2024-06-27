@@ -8,10 +8,11 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface DbManageMapper extends BaseMapper<Object> {
 
-    @Select("CREATE TABLE IF NOT EXISTS ${tableName} (${tableName}_id INT PRIMARY KEY AUTO_INCREMENT)")
+    @Select("CREATE TABLE IF NOT EXISTS ${tableName} (${tableName}_id int PRIMARY KEY AUTO_INCREMENT)")
     void createTable(@Param("tableName")String tableName);
 
     @Select("CREATE TABLE IF NOT EXISTS ${tableName}_attribute (`attribute` varchar(45) PRIMARY KEY , `translation` varchar(45) ,`class_name` varchar(45) ,`privilege` INT)")
@@ -44,8 +45,24 @@ public interface DbManageMapper extends BaseMapper<Object> {
     @Delete("DELETE FROM ${tableName} WHERE ${attribute} = #{value}")
     void deleteRecord(String tableName, String attribute, String value);
 
-    void updateStructTable(@Param("data")List<LinkedHashMap<String,Object>> data,@Param("tableName") String tableName);
+    void updateStructModify(@Param("tableName")String tableName,@Param("Field")String Field,@Param("Type")String Type,@Param("Null")String Null);
+
+    void updateStructKey(@Param("tableName") String tableName,@Param("Field") String Field ,@Param("Key") String key);
+
+
+    @Select("ALTER TABLE ${tableName} ALTER ${field} SET DEFAULT #{Default}")
+    void updateStructDefault(String tableName, String field, String Default);
+
+    @Select("INSERT ${tableName} VALUES (#{field},#{field},#{type},#{count})")
+    void updateAttribute(String tableName, String field, String type,int count);
 
     @Select("TRUNCATE TABLE ${tableName}")
-    void truncate(String tableName);
+    void truncateTable(String tableName);
+
+
+    void insertRecord(@Param("tableName") String tableName, @Param("columnMap") Map<String,Object> columnMap);
+
+
+    @Select("ALTER TABLE ${tableName}  DROP ${field}")
+    void deleteField(String tableName, String field);
 }

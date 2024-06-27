@@ -10,13 +10,37 @@
             </if>
     </select>
 
-    <insert id="updateStructTable">
-        INSERT INTO ${tableName} VALUES
-        <foreach collection="data" item="item" separator="union all">
-            (
-                #{item.Field},#{item.Type},#{item.Null},#{item.Key},#{item.Default},#{item.Extra}
-            )
-        </foreach>
-    </insert>
+    <select id="updateStructModify">
+        ALTER TABLE ${tableName} MODIFY COLUMN ${Field} ${Type}
+        <if test="Null != 'YES'">
+            NOT NULL
+        </if>
+    </select>
 
+    <select id="updateStructKey">
+        ALTER TABLE ${tableName}
+        ADD CONSTRAINT key_${Field}
+        <choose>
+            <when test="Key != UNI">
+                PRIMARY KEY
+            </when>
+            <otherwise>
+                UNIQUE
+            </otherwise>
+        </choose>
+        (${Field})
+    </select>
+
+    <insert id="insertRecord" parameterType="java.util.Map">
+        insert into ${tableName} (
+        <foreach collection="columnMap" item="value" index="key" separator=",">
+            ${key}
+        </foreach>
+        )
+        values (
+        <foreach collection="columnMap" item="value" index="key" separator=",">
+            #{value}
+        </foreach>
+        )
+    </insert>
 </mapper>

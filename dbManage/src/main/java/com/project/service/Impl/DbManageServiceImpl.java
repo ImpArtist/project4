@@ -150,17 +150,63 @@ public class DbManageServiceImpl extends ServiceImpl<DbManageMapper, Object> imp
     @Override
     public boolean updateStructTable(Map<String, Object> map) {
         String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+
         try{
             List<LinkedHashMap<String,Object>> tmp = new ArrayList<>();
             List<LinkedHashMap<String,Object>> data = (List<LinkedHashMap<String, Object>>) Optional.ofNullable(map.get("data")).orElse(tmp);
-            baseMapper.truncate(tableName);
-            baseMapper.updateStructTable(data,tableName);
+            List<LinkedHashMap<String,Object>> data2 = (List<LinkedHashMap<String, Object>>)getTableStruct(map).get("data");
+            int count=0;
+            for(LinkedHashMap<String,Object> map_:data){
+                System.out.println(map_);
+                LinkedHashMap<String,Object> map2 = data2.get(count++);
+                String Field = Optional.ofNullable(map_.get("Field")).orElse("").toString();
+                String Type = Optional.ofNullable(map_.get("Type")).orElse("").toString();
+                String Null = Optional.ofNullable(map_.get("Null")).orElse("").toString();
+                String Key = Optional.ofNullable(map_.get("Key")).orElse("").toString();
+                String Default = Optional.ofNullable(map_.get("Default")).orElse("").toString();
+                String Extra = Optional.ofNullable(map_.get("Extra")).orElse("").toString();
+                if(!Extra.isEmpty()&&!Key.equals("PRI"))
+                    return false;
+                baseMapper.updateStructModify(tableName,Field,Type,Null);
+                if(map2.get("Key").equals("PRI")&&!Key.equals("PRI"))
+                    baseMapper.updateStructKey(tableName,Field,Key);
+                baseMapper.updateStructDefault(tableName,Field,Default);
+                baseMapper.truncateTable(tableName+"_attribute");
+                baseMapper.updateAttribute(tableName+"_attribute",Field,Type,count);
+            }
             return true;
         }catch (Exception e){
             System.out.println(e.getMessage());
             return false;
         }
 
+    }
+
+    @Override
+    public boolean insertRecord(Map<String, Object> map) {
+        String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+        Map<String,Object> record = (Map<String, Object>) Optional.ofNullable(map.get("record")).orElse("");
+
+        try{
+                baseMapper.insertRecord(tableName, record);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteField(Map<String, Object> map) {
+        String tableName = Optional.ofNullable(map.get("tableName")).orElse("").toString();
+        String Field = Optional.ofNullable(map.get("Field")).orElse("").toString();
+        try{
+            baseMapper.deleteField(tableName,Field);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 
 

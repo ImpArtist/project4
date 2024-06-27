@@ -20,4 +20,8 @@ public interface DbManageService {
     boolean deleteRecord(Map<String, Object> map);
 
     boolean updateStructTable(Map<String, Object> map);
+
+    boolean insertRecord(Map<String, Object> map);
+
+    boolean deleteField(Map<String, Object> map);
 }

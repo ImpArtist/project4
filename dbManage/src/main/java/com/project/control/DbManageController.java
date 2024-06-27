@@ -59,4 +59,15 @@ public class DbManageController {
         return Service.updateStructTable(map);
     }
 
+
+    @PostMapping("/insertRecord")
+    boolean insertRecord(@RequestBody Map<String, Object> map){
+        return Service.insertRecord(map);
+    }
+
+    @PostMapping("/deleteField")
+    boolean deleteField(@RequestBody Map<String, Object> map){
+        return Service.deleteField(map);
+    }
+
 }
