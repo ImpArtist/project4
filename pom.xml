@@ -15,6 +15,7 @@
         <module>api</module>
         <module>dimensionAnalysis</module>
         <module>chart</module>
+        <module>login</module>
     </modules>
 
     <parent>
